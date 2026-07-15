@@ -1,0 +1,58 @@
+:root {
+  --paper: #f3e6c4;
+  --paper-light: #fff8e8;
+  --ink: #29251d;
+  --ink-soft: #655e4f;
+  --forest: #334b3f;
+  --forest-light: #527260;
+  --rust: #9b4f35;
+  --gold: #b58a3c;
+  --line: rgba(63, 52, 35, 0.28);
+  --shadow: 0 10px 30px rgba(55, 43, 27, 0.17);
+  font-family: 'Source Serif 4', Georgia, serif;
+  color: var(--ink);
+  background: #d3c39c url('/parchment-map.png') center / 900px auto repeat;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+a {
+  color: var(--forest);
+}
+:focus-visible {
+  outline: 3px solid rgba(155, 79, 53, 0.45);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,42 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(38, 32, 24, 0.62);
+}
+.modal {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border: 1px solid #887650;
+  border-radius: 4px;
+  background: var(--paper-light) url('/parchment-map.png') center / 900px;
+  box-shadow: 0 22px 60px rgba(25, 21, 16, 0.35);
+  > header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    padding: 17px 20px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(246, 234, 203, 0.95);
+  }
+  h2 {
+    margin: 0;
+    font:
+      600 20px 'Cinzel',
+      serif;
+  }
+  header button {
+    margin-left: auto;
+    padding: 4px;
+    border: 0;
+    color: var(--ink);
+    background: none;
+  }
+}
+.wide {
+  width: min(700px, 100%);
+}

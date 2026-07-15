@@ -1,0 +1,42 @@
+.form {
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+  > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  label {
+    display: grid;
+    gap: 5px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  input,
+  textarea {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--ink);
+  }
+  footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  button {
+    padding: 9px 13px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: transparent;
+  }
+  .primary {
+    color: #fff;
+    background: var(--forest);
+  }
+}

@@ -1,0 +1,49 @@
+.form {
+  display: grid;
+  justify-items: start;
+
+  > p {
+    margin-top: 0;
+    color: var(--ink-soft);
+  }
+
+  label {
+    display: grid;
+    gap: 5px;
+    width: min(100%, 420px);
+    margin: 14px 0 20px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.45);
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  span {
+    color: var(--forest);
+  }
+}
+
+.primary {
+  padding: 10px 14px;
+  border: 1px solid #293e34;
+  border-radius: 3px;
+  color: #fff;
+  background: var(--forest);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
