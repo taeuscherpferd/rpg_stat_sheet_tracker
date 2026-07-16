@@ -51,7 +51,7 @@ quoted() {
 run_remote() {
   local remote_command
   remote_command="bash -s -- $(quoted "$1") $(quoted "$APP_ROOT") $(quoted "$REPOSITORY_URL") $(quoted "$DEPLOY_BRANCH") $(quoted "$PORT") $(quoted "$2")"
-  ssh "$DEPLOY_HOST" "$remote_command" < "$script_directory/remote.sh"
+  ssh "$DEPLOY_USER@$DEPLOY_HOST" "$remote_command" < "$script_directory/remote.sh"
 }
 
 cd "$project_root"
