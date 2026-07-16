@@ -44,6 +44,17 @@ The target container requires:
   on the container when the repository is private.
 - A writable application root, `/srv/rlrpg` by default.
 
+Node may be installed with NVM. The remote deployment explicitly loads
+`$HOME/.nvm/nvm.sh` and selects Node 24 when Node, pnpm, or PM2 is unavailable
+in the non-interactive SSH environment. Because NVM global packages are scoped
+to a Node installation, prepare the deployment user with:
+
+```bash
+nvm install 24
+nvm alias default 24
+npm install --global pnpm@11 pm2
+```
+
 Copy the deployment configuration and update the SSH host, application path,
 port, and repository URL:
 

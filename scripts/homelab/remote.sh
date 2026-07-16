@@ -11,6 +11,25 @@ release_id="${6:?Release ID is required}"
 process_name='rlrpg'
 database_path="$app_root/shared/rlrpg.db"
 
+load_node_runtime() {
+  if command -v node >/dev/null && command -v pnpm >/dev/null && command -v pm2 >/dev/null; then
+    return
+  fi
+
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  if [[ ! -s "$NVM_DIR/nvm.sh" ]]; then
+    return
+  fi
+
+  set +u
+  source "$NVM_DIR/nvm.sh"
+  if ! nvm use --silent 24 >/dev/null; then
+    echo 'NVM is installed, but Node.js 24 is unavailable. Run: nvm install 24' >&2
+    exit 1
+  fi
+  set -u
+}
+
 require_command() {
   command -v "$1" >/dev/null || {
     echo "Required remote command is unavailable: $1" >&2
@@ -129,6 +148,7 @@ EOF
   echo 'Installed the nightly cron backup job.'
 }
 
+load_node_runtime
 check_prerequisites
 
 if [[ "$action" == 'check' ]]; then
