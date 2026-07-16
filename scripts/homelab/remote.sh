@@ -89,7 +89,10 @@ start_release() {
   export PORT="$port"
   export RELEASE_ID="$active_release_id"
   cd "$release_directory"
-  pm2 startOrRestart ecosystem.config.json --only "$process_name" --update-env
+  if pm2 describe "$process_name" >/dev/null 2>&1; then
+    pm2 delete "$process_name"
+  fi
+  pm2 start ecosystem.config.json --only "$process_name" --update-env
 }
 
 configure_scheduler() {
