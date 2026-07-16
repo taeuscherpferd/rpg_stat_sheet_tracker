@@ -27,6 +27,18 @@ describe('FocusedPracticeLogic', () => {
     ).toBe(8000)
     expect(FocusedPracticeLogic.resume(timer, 8000)).toBe(timer)
   })
+  it('counts down each configured interval', () => {
+    expect(FocusedPracticeLogic.durationSeconds(timer)).toBe(1500)
+    expect(FocusedPracticeLogic.remaining(timer, 6500)).toBe(1485)
+    expect(FocusedPracticeLogic.drainedFraction(timer, 6500)).toBe(0.01)
+    expect(FocusedPracticeLogic.remaining(timer, 1_491_000)).toBe(0)
+    expect(FocusedPracticeLogic.drainedFraction(timer, 1_491_000)).toBe(1)
+    expect(FocusedPracticeLogic.remaining(timer, 1_492_000)).toBe(1499)
+    expect(FocusedPracticeLogic.drainedFraction(timer, 1_492_000)).toBeCloseTo(
+      1 / 1500,
+    )
+    expect(FocusedPracticeLogic.remaining(timer, 2_991_000)).toBe(0)
+  })
   it('formats time and safely restores state', () => {
     expect(FocusedPracticeLogic.format(1505)).toBe('25:05')
     expect(FocusedPracticeLogic.storageKey('user')).toBe('rlrpg.focus.user')

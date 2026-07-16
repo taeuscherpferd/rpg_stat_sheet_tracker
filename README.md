@@ -1,6 +1,6 @@
 # RLRPG Skill Sheet
 
-RLRPG turns real-world practice into a personal RPG skill ledger. It tracks levels, linked-skill XP, manual activity, Focused Practice sessions, and automation events in a local SQLite database. Skills support tags and an individually customizable color shared by the header and XP bar. The main skill sheet can be filtered by skill name, code, or tag and sorted by name or level.
+RLRPG turns real-world practice into a personal RPG skill ledger. It tracks levels, linked-skill XP, manual activity, Focused Practice sessions, and automation events in a local SQLite database. Focused Practice uses a repeating, configurable Pomodoro countdown with a circular remaining-time indicator and a chime at each completed interval. Skills support tags and an individually customizable color shared by the header and XP bar. The main skill sheet can be filtered by skill name, code, or tag and sorted by name or level.
 
 ## Setup
 

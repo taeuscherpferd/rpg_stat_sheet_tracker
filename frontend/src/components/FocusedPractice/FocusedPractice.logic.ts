@@ -19,6 +19,25 @@ export class FocusedPracticeLogic {
         : Math.max(0, Math.floor((now - state.runningSince) / 1000)))
     )
   }
+  static durationSeconds(state: TimerState): number {
+    return state.settings.intervalMinutes * 60
+  }
+  static remaining(state: TimerState, now: number): number {
+    const duration = this.durationSeconds(state)
+    const elapsed = this.elapsed(state, now)
+    const elapsedInInterval = elapsed % duration
+    return elapsed > 0 && elapsedInInterval === 0
+      ? 0
+      : duration - elapsedInInterval
+  }
+  static drainedFraction(state: TimerState, now: number): number {
+    const duration = this.durationSeconds(state)
+    const elapsed = this.elapsed(state, now)
+    const elapsedInInterval = elapsed % duration
+    return elapsed > 0 && elapsedInInterval === 0
+      ? 1
+      : elapsedInInterval / duration
+  }
   static pause(state: TimerState, now: number): TimerState {
     return {
       ...state,

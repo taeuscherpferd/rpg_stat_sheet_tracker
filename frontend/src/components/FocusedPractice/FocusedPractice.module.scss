@@ -78,14 +78,24 @@
   font-weight: 600;
 }
 .clock {
+  --timer-drained: 0turn;
+
   width: min(330px, 78vw);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
   padding: 13px;
-  border: 12px solid rgba(155, 79, 53, 0.72);
+  border: 12px solid transparent;
   border-radius: 50%;
-  background: rgba(255, 248, 230, 0.58);
+  background:
+    linear-gradient(rgba(255, 248, 230, 0.58), rgba(255, 248, 230, 0.58))
+      padding-box,
+    conic-gradient(
+        from 0deg,
+        rgba(155, 79, 53, 0.12) 0 var(--timer-drained),
+        rgba(155, 79, 53, 0.72) var(--timer-drained) 1turn
+      )
+      border-box;
   div {
     width: 100%;
     height: 100%;
@@ -104,12 +114,6 @@
   span {
     color: var(--ink-soft);
   }
-}
-.intervalProgress {
-  width: min(300px, 70vw);
-  height: 8px;
-  margin-top: 12px;
-  accent-color: var(--rust);
 }
 .controls {
   display: flex;
