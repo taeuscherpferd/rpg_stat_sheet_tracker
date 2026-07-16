@@ -1,12 +1,13 @@
 import { type FormEvent, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/hooks'
-import { updateProfile } from '@/store'
+import { refreshData, updateProfile } from '@/store'
 import styles from './AccountSettings.module.scss'
 
 export const AccountSettings = () => {
   const dispatch = useAppDispatch()
   const user = useAppSelector((state) => state.app.user)
   const loading = useAppSelector((state) => state.app.loading)
+  const offline = useAppSelector((state) => state.app.connection === 'offline')
   const [username, setUsername] = useState(user?.username ?? '')
   const [saved, setSaved] = useState(false)
 
@@ -16,6 +17,7 @@ export const AccountSettings = () => {
     try {
       const updatedUser = await dispatch(updateProfile({ username })).unwrap()
       setUsername(updatedUser.username)
+      await dispatch(refreshData())
       setSaved(true)
     } catch {
       setSaved(false)
@@ -33,6 +35,7 @@ export const AccountSettings = () => {
           minLength={3}
           maxLength={40}
           autoComplete="username"
+          disabled={offline}
           value={username}
           onChange={(event) => {
             setUsername(event.target.value)
@@ -43,7 +46,7 @@ export const AccountSettings = () => {
       <div className={styles.actions}>
         <button
           className={styles.primary}
-          disabled={loading || username.trim() === user?.username}
+          disabled={offline || loading || username.trim() === user?.username}
           type="submit"
         >
           Save username

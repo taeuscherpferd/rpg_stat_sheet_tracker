@@ -3,7 +3,7 @@ import type { SkillResponse } from '@rlrpg/shared/contracts'
 import { api } from '@/api'
 import { AppLogic } from '@/components/App/App.logic'
 import { Modal } from '@/components/Modal/Modal'
-import { useAppDispatch } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { addXp, refreshData } from '@/store'
 import styles from './XpDialog.module.scss'
 
@@ -14,6 +14,7 @@ interface XpDialogProps {
 
 export const XpDialog = ({ skill, onClose }: XpDialogProps) => {
   const dispatch = useAppDispatch()
+  const offline = useAppSelector((state) => state.app.connection === 'offline')
   const [date, setDate] = useState(AppLogic.today())
   const [xp, setXp] = useState('')
   const [minutes, setMinutes] = useState('')
@@ -126,7 +127,7 @@ export const XpDialog = ({ skill, onClose }: XpDialogProps) => {
           <button type="button" onClick={onClose}>
             Cancel
           </button>
-          <button className={styles.primary} type="submit">
+          <button className={styles.primary} disabled={offline} type="submit">
             Add XP
           </button>
         </footer>

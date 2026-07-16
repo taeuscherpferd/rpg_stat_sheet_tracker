@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import type { XpEntryResponse } from '@rlrpg/shared/contracts'
 import { Modal } from '@/components/Modal/Modal'
-import { useAppDispatch } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { editXp, refreshData } from '@/store'
 import styles from './HistoryEditDialog.module.scss'
 
@@ -15,6 +15,7 @@ export const HistoryEditDialog = ({
   onClose,
 }: HistoryEditDialogProps) => {
   const dispatch = useAppDispatch()
+  const offline = useAppSelector((state) => state.app.connection === 'offline')
   const [date, setDate] = useState(entry.date)
   const [xp, setXp] = useState(String(entry.xp))
   const [minutes, setMinutes] = useState(
@@ -90,7 +91,7 @@ export const HistoryEditDialog = ({
           <button type="button" onClick={onClose}>
             Cancel
           </button>
-          <button className={styles.primary} type="submit">
+          <button className={styles.primary} disabled={offline} type="submit">
             Save changes
           </button>
         </footer>

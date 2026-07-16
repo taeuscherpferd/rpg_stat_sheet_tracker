@@ -11,7 +11,10 @@ import styles from './FocusedPractice.module.scss'
 
 export const FocusedPractice = () => {
   const dispatch = useAppDispatch()
-  const { user, skills, settings } = useAppSelector((state) => state.app)
+  const { user, skills, settings, connection } = useAppSelector(
+    (state) => state.app,
+  )
+  const offline = connection === 'offline'
   const activeSkills = skills.filter((skill) => !skill.archived)
   const storageKey = FocusedPracticeLogic.storageKey(user?.id ?? 'guest')
   const [timer, setTimer] = useState<TimerState | null>(() =>
@@ -125,7 +128,7 @@ export const FocusedPractice = () => {
           </div>
           <button
             className={styles.start}
-            disabled={selectedSkillId === ''}
+            disabled={selectedSkillId === '' || offline}
             type="button"
             onClick={start}
           >
@@ -192,7 +195,7 @@ export const FocusedPractice = () => {
             <button
               type="button"
               title="Complete session"
-              disabled={intervals < 1}
+              disabled={intervals < 1 || offline}
               onClick={openCompletion}
             >
               <Check size={21} />
@@ -264,6 +267,7 @@ export const FocusedPractice = () => {
               <button
                 className={styles.confirm}
                 disabled={
+                  offline ||
                   !rolls.every(
                     (roll) => Number(roll) >= 1 && Number(roll) <= 20,
                   )

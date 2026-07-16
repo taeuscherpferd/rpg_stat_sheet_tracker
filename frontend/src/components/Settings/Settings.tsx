@@ -30,9 +30,9 @@ type SettingsTab = 'account' | 'practice' | 'history' | 'automation' | 'export'
 
 export const Settings = () => {
   const dispatch = useAppDispatch()
-  const { settings, entries, skills, apiKeys, user } = useAppSelector(
-    (state) => state.app,
-  )
+  const { settings, entries, skills, apiKeys, user, connection } =
+    useAppSelector((state) => state.app)
+  const offline = connection === 'offline'
   const [tab, setTab] = useState<SettingsTab>('practice')
   const [draft, setDraft] = useState<FocusSettings | null>(settings)
   const [skillFilter, setSkillFilter] = useState('')
@@ -161,6 +161,7 @@ export const Settings = () => {
                   Interval length <span>minutes</span>
                   <input
                     type="number"
+                    disabled={offline}
                     min={1}
                     max={240}
                     value={draft.intervalMinutes}
@@ -176,6 +177,7 @@ export const Settings = () => {
                   Base XP
                   <input
                     type="number"
+                    disabled={offline}
                     min={1}
                     max={100000}
                     value={draft.baseXp}
@@ -188,6 +190,7 @@ export const Settings = () => {
                   Normal roll rate <span>% per pip</span>
                   <input
                     type="number"
+                    disabled={offline}
                     min={0}
                     max={100}
                     value={draft.normalPercentPerPip}
@@ -203,6 +206,7 @@ export const Settings = () => {
                   Natural 1 bonus <span>%</span>
                   <input
                     type="number"
+                    disabled={offline}
                     min={0}
                     max={500}
                     value={draft.naturalOneBonusPercent}
@@ -218,6 +222,7 @@ export const Settings = () => {
                   Natural 20 bonus <span>%</span>
                   <input
                     type="number"
+                    disabled={offline}
                     min={0}
                     max={500}
                     value={draft.naturalTwentyBonusPercent}
@@ -230,7 +235,11 @@ export const Settings = () => {
                   />
                 </label>
               </div>
-              <button className={styles.primary} type="submit">
+              <button
+                className={styles.primary}
+                disabled={offline}
+                type="submit"
+              >
                 Save practice rules
               </button>
             </form>
@@ -303,6 +312,7 @@ export const Settings = () => {
                         <button
                           title="Edit entry"
                           type="button"
+                          disabled={offline}
                           onClick={() => setEditing(entry)}
                         >
                           <Pencil size={16} />
@@ -311,6 +321,7 @@ export const Settings = () => {
                       <button
                         title="Delete entry"
                         type="button"
+                        disabled={offline}
                         onClick={() => void removeEntry(entry)}
                       >
                         <Trash2 size={16} />
@@ -349,6 +360,11 @@ export const Settings = () => {
                 Create a key for scripts or assistants. The secret is only shown
                 once.
               </p>
+              {offline && (
+                <p role="status">
+                  API key details and management are unavailable offline.
+                </p>
+              )}
               {newToken !== null && (
                 <div className={styles.token}>
                   <strong>New API key</strong>
@@ -369,6 +385,7 @@ export const Settings = () => {
                   Key name
                   <input
                     required
+                    disabled={offline}
                     maxLength={80}
                     value={keyName}
                     onChange={(event) => setKeyName(event.target.value)}
@@ -378,6 +395,7 @@ export const Settings = () => {
                 <label>
                   Access
                   <select
+                    disabled={offline}
                     value={keyPreset}
                     onChange={(event) =>
                       setKeyPreset(event.target.value as 'reader' | 'writer')
@@ -387,7 +405,11 @@ export const Settings = () => {
                     <option value="reader">Skill reader</option>
                   </select>
                 </label>
-                <button className={styles.primary} type="submit">
+                <button
+                  className={styles.primary}
+                  disabled={offline}
+                  type="submit"
+                >
                   Create key
                 </button>
               </form>
@@ -406,6 +428,7 @@ export const Settings = () => {
                     <button
                       title="Revoke API key"
                       type="button"
+                      disabled={offline}
                       onClick={() => void revoke(key.id)}
                     >
                       <Trash2 size={17} />
@@ -428,6 +451,7 @@ export const Settings = () => {
               <div className={styles.exports}>
                 <button
                   type="button"
+                  disabled={offline}
                   onClick={() =>
                     void downloadExport('/exports/skills.csv', 'skills.csv')
                   }
@@ -440,6 +464,7 @@ export const Settings = () => {
                 </button>
                 <button
                   type="button"
+                  disabled={offline}
                   onClick={() =>
                     void downloadExport(
                       '/exports/xp-history.csv',

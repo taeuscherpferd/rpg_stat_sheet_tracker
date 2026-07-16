@@ -22,6 +22,34 @@ pnpm --filter @rlrpg/backend start
 
 Express serves `frontend/dist` in production. Set `PORT` to change the HTTP port and `DATABASE_PATH` to choose the SQLite file location. The backend uses Node 24's built-in `node:sqlite` module, so no native database package or separate SQLite installation is required.
 
+## Progressive Web App
+
+The production frontend is an installable PWA. Its service worker precaches the
+application shell, fonts, icons, and visual assets, but deliberately excludes all
+`/api` routes. Installation and service workers require a trusted HTTPS origin
+outside local development; `localhost` is the only HTTP exception.
+
+After one successful authenticated load, the frontend saves a versioned snapshot
+of the user profile, skills, XP history, and Focused Practice settings in
+IndexedDB. If the server cannot be reached later, the app opens that snapshot in
+read-only mode and shows when it was last synchronized. API key metadata is not
+saved offline. Write controls and exports remain unavailable until connectivity
+returns, at which point the app refreshes the snapshot automatically. Logging out
+or receiving a confirmed authentication rejection clears both the browser session
+and the offline snapshot.
+
+To test the service worker locally, create a production build and serve the full
+application through Express rather than Vite's development server:
+
+```bash
+pnpm build
+pnpm --filter @rlrpg/backend start
+```
+
+Open `http://localhost:3000`, complete one online sign-in, and then use the
+browser's Application and Network developer tools to inspect installation,
+service-worker updates, storage, and offline startup.
+
 ## Commands
 
 - `pnpm test`: run frontend and backend tests.
@@ -125,6 +153,8 @@ Normal failed deployments perform this sequence automatically.
 The application listens directly on the configured private container port. Use
 the Proxmox or container firewall to restrict it to trusted LAN and VPN subnets.
 This deployment does not configure public ingress, DNS, a reverse proxy, or TLS.
+Place a TLS-terminating reverse proxy such as Caddy, Traefik, or Nginx in front of
+the application before installing the PWA from another device.
 
 ## Automation API
 

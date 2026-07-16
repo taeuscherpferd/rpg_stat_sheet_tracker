@@ -5,6 +5,7 @@ import {
   isFulfilled,
   isPending,
   isRejected,
+  type PayloadAction,
 } from '@reduxjs/toolkit'
 import type {
   ApiKeyResponse,
@@ -13,7 +14,14 @@ import type {
   UserResponse,
   XpEntryResponse,
 } from '@rlrpg/shared/contracts'
-import { api, apiErrorMessage, SESSION_KEY } from '@/api'
+import {
+  api,
+  apiErrorMessage,
+  apiErrorStatus,
+  isNetworkError,
+  SESSION_KEY,
+} from '@/api'
+import { AppDataSync, type InitializedAppData } from '@/AppDataSync'
 
 interface AuthPayload {
   token: string
@@ -33,6 +41,9 @@ interface AppState {
   apiKeys: ApiKeyResponse[]
   loading: boolean
   initialized: boolean
+  hasLoadedData: boolean
+  connection: 'online' | 'offline'
+  lastSyncedAt: string | null
   error: string | null
 }
 
@@ -44,32 +55,58 @@ const initialState: AppState = {
   apiKeys: [],
   loading: false,
   initialized: false,
+  hasLoadedData: false,
+  connection: navigator.onLine ? 'online' : 'offline',
+  lastSyncedAt: null,
   error: null,
 }
 
+class NetworkUnavailableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'NetworkUnavailableError'
+  }
+}
+
+class AuthenticationRequiredError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'AuthenticationRequiredError'
+  }
+}
+
 const rejected = (error: Error): never => {
+  if (isNetworkError(error))
+    throw new NetworkUnavailableError(apiErrorMessage(error))
   throw new Error(apiErrorMessage(error))
 }
 
 export const initialize = createAsyncThunk('app/initialize', async () => {
-  if (localStorage.getItem(SESSION_KEY) === null) return null
+  if (localStorage.getItem(SESSION_KEY) === null) {
+    await AppDataSync.clearSnapshot()
+    return null
+  }
   try {
-    const user = (await api.get<UserResponse>('/auth/me')).data
-    const [skills, entries, settings, apiKeys] = await Promise.all([
-      api.get<SkillResponse[]>('/skills'),
-      api.get<XpEntryResponse[]>('/xp-entries'),
-      api.get<FocusSettings>('/settings'),
-      api.get<ApiKeyResponse[]>('/api-keys'),
-    ])
+    const data = await AppDataSync.loadRemote()
     return {
-      user,
-      skills: skills.data,
-      entries: entries.data,
-      settings: settings.data,
-      apiKeys: apiKeys.data,
-    }
+      ...data,
+      source: 'remote',
+      lastSyncedAt: await AppDataSync.saveSnapshot(data),
+    } satisfies InitializedAppData
   } catch (error) {
-    localStorage.removeItem(SESSION_KEY)
+    const status = apiErrorStatus(error)
+    if (status === 401 || status === 403) {
+      localStorage.removeItem(SESSION_KEY)
+      await AppDataSync.clearSnapshot()
+      throw new AuthenticationRequiredError(apiErrorMessage(error))
+    }
+    if (!isNetworkError(error)) return rejected(error)
+    try {
+      const snapshot = await AppDataSync.loadSnapshot()
+      if (snapshot !== null) return snapshot
+    } catch (snapshotError) {
+      console.error('Unable to load the offline ledger snapshot', snapshotError)
+    }
     return rejected(error)
   }
 })
@@ -116,19 +153,18 @@ export const updateProfile = createAsyncThunk(
 
 export const refreshData = createAsyncThunk('app/refresh', async () => {
   try {
-    const [skills, entries, settings, apiKeys] = await Promise.all([
-      api.get<SkillResponse[]>('/skills'),
-      api.get<XpEntryResponse[]>('/xp-entries'),
-      api.get<FocusSettings>('/settings'),
-      api.get<ApiKeyResponse[]>('/api-keys'),
-    ])
+    const data = await AppDataSync.loadRemote()
     return {
-      skills: skills.data,
-      entries: entries.data,
-      settings: settings.data,
-      apiKeys: apiKeys.data,
+      ...data,
+      lastSyncedAt: await AppDataSync.saveSnapshot(data),
     }
   } catch (error) {
+    const status = apiErrorStatus(error)
+    if (status === 401 || status === 403) {
+      localStorage.removeItem(SESSION_KEY)
+      await AppDataSync.clearSnapshot()
+      throw new AuthenticationRequiredError(apiErrorMessage(error))
+    }
     return rejected(error)
   }
 })
@@ -269,6 +305,7 @@ export const logout = createAsyncThunk('app/logout', async () => {
     /* Local logout still succeeds if the server session has expired. */
   }
   localStorage.removeItem(SESSION_KEY)
+  await AppDataSync.clearSnapshot()
 })
 
 const appSlice = createSlice({
@@ -278,19 +315,31 @@ const appSlice = createSlice({
     clearError: (state) => {
       state.error = null
     },
+    connectionChanged: (state, action: PayloadAction<boolean>) => {
+      state.connection = action.payload ? 'online' : 'offline'
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(initialize.fulfilled, (state, action) => {
       state.initialized = true
-      if (action.payload !== null) Object.assign(state, action.payload)
+      if (action.payload !== null) {
+        const { source, ...data } = action.payload
+        Object.assign(state, data)
+        state.hasLoadedData = true
+        state.connection = source === 'remote' ? 'online' : 'offline'
+      }
     })
     builder.addCase(login.fulfilled, (state, action) => {
       state.user = action.payload
       state.initialized = true
+      state.hasLoadedData = false
+      state.connection = 'online'
     })
     builder.addCase(register.fulfilled, (state, action) => {
       state.user = action.payload
       state.initialized = true
+      state.hasLoadedData = false
+      state.connection = 'online'
     })
     builder.addCase(updateProfile.fulfilled, (state, action) => {
       state.user = action.payload
@@ -299,9 +348,11 @@ const appSlice = createSlice({
       ...initialState,
       initialized: true,
     }))
-    builder.addCase(refreshData.fulfilled, (state, action) =>
-      Object.assign(state, action.payload),
-    )
+    builder.addCase(refreshData.fulfilled, (state, action) => {
+      Object.assign(state, action.payload)
+      state.hasLoadedData = true
+      state.connection = 'online'
+    })
     builder.addCase(createApiKey.fulfilled, (state, action) => {
       state.apiKeys.unshift(action.payload.apiKey)
     })
@@ -313,14 +364,26 @@ const appSlice = createSlice({
       state.loading = false
     })
     builder.addMatcher(isRejected, (state, action) => {
+      if (action.error.name === 'AuthenticationRequiredError') {
+        return {
+          ...initialState,
+          initialized: true,
+          error: action.error.message ?? 'Authentication required',
+        }
+      }
       state.loading = false
       state.initialized = true
+      if (action.error.name === 'NetworkUnavailableError') {
+        state.connection = 'offline'
+      }
       state.error = action.error.message ?? 'Request failed'
     })
   },
 })
 
-export const { clearError } = appSlice.actions
-export const store = configureStore({ reducer: { app: appSlice.reducer } })
+export const { clearError, connectionChanged } = appSlice.actions
+export const createAppStore = () =>
+  configureStore({ reducer: { app: appSlice.reducer } })
+export const store = createAppStore()
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

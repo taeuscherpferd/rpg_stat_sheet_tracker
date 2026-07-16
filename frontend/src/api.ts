@@ -9,10 +9,23 @@ export const SESSION_KEY = 'rlrpg.session'
 export const api = axios.create({ baseURL: '/api' })
 
 api.interceptors.request.use((config) => {
+  const method = config.method?.toLowerCase() ?? 'get'
+  if (
+    navigator.onLine === false &&
+    !['get', 'head', 'options'].includes(method)
+  ) {
+    throw new Error('Changes are unavailable while offline.')
+  }
   const token = localStorage.getItem(SESSION_KEY)
   if (token !== null) config.headers.Authorization = `Bearer ${token}`
   return config
 })
+
+export const apiErrorStatus = (error: Error): number | null =>
+  error instanceof AxiosError ? (error.response?.status ?? null) : null
+
+export const isNetworkError = (error: Error): boolean =>
+  error instanceof AxiosError && error.response === undefined
 
 export const apiErrorMessage = (error: Error): string => {
   if (error instanceof AxiosError) {

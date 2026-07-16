@@ -16,6 +16,21 @@
   font-family: 'Cinzel', serif;
   font-size: 20px;
 }
+.offline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 9px 18px;
+  color: #342d21;
+  background: #dfc98f;
+  border-bottom: 1px solid rgba(63, 52, 35, 0.28);
+  font-size: 14px;
+  text-align: center;
+  svg {
+    flex: 0 0 auto;
+  }
+}
 .error {
   position: fixed;
   right: 18px;

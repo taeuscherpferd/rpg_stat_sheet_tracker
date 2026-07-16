@@ -4,7 +4,7 @@ import type { SkillResponse } from '@rlrpg/shared/contracts'
 import { AppLogic } from '@/components/App/App.logic'
 import { Modal } from '@/components/Modal/Modal'
 import { SkillDialogLogic } from '@/components/SkillDialog/SkillDialog.logic'
-import { useAppDispatch } from '@/hooks'
+import { useAppDispatch, useAppSelector } from '@/hooks'
 import { refreshData, saveSkill } from '@/store'
 import styles from './SkillDialog.module.scss'
 
@@ -26,6 +26,7 @@ export const SkillDialog = ({
   onArchive,
 }: SkillDialogProps) => {
   const dispatch = useAppDispatch()
+  const offline = useAppSelector((state) => state.app.connection === 'offline')
   const [name, setName] = useState(skill?.name ?? '')
   const [code, setCode] = useState(skill?.code ?? '')
   const [emoji, setEmoji] = useState(skill?.emoji ?? '')
@@ -227,6 +228,7 @@ export const SkillDialog = ({
             <button
               className={styles.archive}
               type="button"
+              disabled={offline}
               onClick={() => {
                 if (window.confirm(`Archive ${skill?.name ?? 'this skill'}?`)) {
                   onArchive()
@@ -239,7 +241,7 @@ export const SkillDialog = ({
           <button type="button" onClick={onClose}>
             Cancel
           </button>
-          <button className={styles.primary} type="submit">
+          <button className={styles.primary} disabled={offline} type="submit">
             Save skill
           </button>
         </footer>

@@ -24,7 +24,8 @@ type SkillCardStyle = CSSProperties & {
 
 export const SkillSheet = () => {
   const dispatch = useAppDispatch()
-  const skills = useAppSelector((state) => state.app.skills)
+  const { skills, connection } = useAppSelector((state) => state.app)
+  const offline = connection === 'offline'
   const active = skills.filter((skill) => !skill.archived)
   const archived = skills.filter((skill) => skill.archived)
   const [filter, setFilter] = useState('')
@@ -69,7 +70,11 @@ export const SkillSheet = () => {
             </select>
           </label>
         </div>
-        <button type="button" onClick={() => setEditing('new')}>
+        <button
+          type="button"
+          disabled={offline}
+          onClick={() => setEditing('new')}
+        >
           <Plus size={18} /> Add skill
         </button>
       </div>
@@ -100,6 +105,7 @@ export const SkillSheet = () => {
               <button
                 className={styles.mainAction}
                 type="button"
+                disabled={offline}
                 onClick={() => setLogging(skill)}
               >
                 <span className={styles.icon}>
@@ -131,6 +137,7 @@ export const SkillSheet = () => {
                 <button
                   type="button"
                   title="Edit skill"
+                  disabled={offline}
                   onClick={() => setEditing(skill)}
                 >
                   <Pencil size={17} />
@@ -166,6 +173,7 @@ export const SkillSheet = () => {
               <button
                 title="Restore skill"
                 type="button"
+                disabled={offline}
                 onClick={() => void archive(skill)}
               >
                 <RotateCcw size={16} />
