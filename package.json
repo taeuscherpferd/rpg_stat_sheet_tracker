@@ -7,7 +7,10 @@
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "format:check": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy:homelab:check": "bash scripts/homelab/deploy.sh check",
+    "deploy:homelab": "bash scripts/homelab/deploy.sh deploy",
+    "deploy:homelab:setup": "bash scripts/homelab/deploy.sh setup"
   },
   "devDependencies": {
     "prettier": "^3.6.2"

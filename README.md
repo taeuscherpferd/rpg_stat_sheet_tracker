@@ -29,6 +29,92 @@ Express serves `frontend/dist` in production. Set `PORT` to change the HTTP port
 - `pnpm build`: type-check and build all packages.
 - `pnpm format:check`: verify Prettier formatting.
 
+## Homelab Deployment
+
+The homelab pipeline deploys a pushed `main` commit over SSH. The target fetches
+and builds the commit, then PM2 runs one Express process that serves both the API
+and frontend. Releases are immutable; the SQLite database and backups live in a
+separate shared directory.
+
+The target container requires:
+
+- Node.js 24 or newer, pnpm 11 or newer, Git, curl, `flock`, and PM2.
+- SSH access from the development machine.
+- Read access to this GitHub repository. Configure a read-only GitHub deploy key
+  on the container when the repository is private.
+- A writable application root, `/srv/rlrpg` by default.
+
+Copy the deployment configuration and update the SSH host, application path,
+port, and repository URL:
+
+```bash
+cp .env.deploy.example .env.deploy
+pnpm deploy:homelab:check
+```
+
+The SSH host can be an alias from `~/.ssh/config`. The deployment configuration
+is intentionally ignored by Git. Do not put a private SSH key or other secrets
+in that file.
+
+Deploy the current commit with:
+
+```bash
+pnpm deploy:homelab
+```
+
+Deployment requires a clean working tree and requires local `HEAD` to match the
+pushed `origin/main`. Before connecting, it runs the full test, lint, and format
+checks. The target builds a new release while the current release remains live,
+then briefly stops PM2 to create a verified database snapshot and activate the
+release. `/api/health` must report the expected commit within 30 seconds or the
+previous release and database are restored automatically.
+
+After the first successful deployment, install the nightly database backup:
+
+```bash
+pnpm deploy:homelab:setup
+```
+
+Setup installs a systemd timer when systemd and passwordless administrative
+access are available. Otherwise it installs a user crontab entry. Backups run at
+03:00, use SQLite's online backup API, pass an integrity check before completion,
+and are retained for 14 days. Pre-deployment snapshots retain the latest ten;
+the latest three application releases are retained.
+
+The default layout on the container is:
+
+```text
+/srv/rlrpg/
+  current -> releases/<timestamp>-<commit>
+  releases/
+  repository.git/
+  shared/
+    rlrpg.db
+    backups/deploy/
+    backups/scheduled/
+```
+
+PM2 is saved after each successful deployment. Run `pm2 startup` once under the
+deployment user, following the command PM2 prints, so the saved process list is
+restored after a container reboot. Useful diagnostics are:
+
+```bash
+pm2 status
+pm2 logs rlrpg
+curl http://127.0.0.1:3000/api/health
+systemctl status rlrpg-backup.timer  # when systemd was selected
+crontab -l                           # when cron was selected
+```
+
+For a manual data restore, stop `rlrpg`, copy a verified `.db` snapshot over
+`shared/rlrpg.db`, remove any adjacent `rlrpg.db-wal` and `rlrpg.db-shm` files,
+and start the process again. Keep the process stopped for the entire restore.
+Normal failed deployments perform this sequence automatically.
+
+The application listens directly on the configured private container port. Use
+the Proxmox or container firewall to restrict it to trusted LAN and VPN subnets.
+This deployment does not configure public ingress, DNS, a reverse proxy, or TLS.
+
 ## Automation API
 
 Create a named **XP writer** key under Settings → Automation. The key is displayed once and stored only as a hash. Interactive documentation is available at `/api/docs`; the OpenAPI document is `/api/openapi.json`.

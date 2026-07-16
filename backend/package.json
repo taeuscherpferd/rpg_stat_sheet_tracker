@@ -7,6 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
+    "backup": "node dist/backup.js",
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json --noEmit"
   },

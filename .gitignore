@@ -6,5 +6,6 @@ coverage
 *.db-shm
 *.db-wal
 .env
+.env.deploy
 .DS_Store
 .vite

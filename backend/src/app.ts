@@ -83,7 +83,10 @@ const csvCell = (value: string | number | null): string => {
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text
 }
 
-export const createApp = (database: AppDatabase) => {
+export const createApp = (
+  database: AppDatabase,
+  releaseId = process.env.RELEASE_ID ?? 'development',
+) => {
   const app = express()
   const ledger = new LedgerService(database)
   const authLimiter = rateLimit({
@@ -102,6 +105,11 @@ export const createApp = (database: AppDatabase) => {
   app.use(helmet({ contentSecurityPolicy: false }))
   app.use(cors({ origin: true }))
   app.use(express.json({ limit: '256kb' }))
+
+  app.get('/api/health', (_request, response) => {
+    database.connection.prepare('SELECT 1').get()
+    response.json({ status: 'ok', releaseId })
+  })
 
   const requireSession = (
     request: Request,

@@ -22,6 +22,15 @@ describe('RLRPG API', () => {
     return { app: createApp(database), token: response.body.token as string }
   }
 
+  it('reports database readiness and the active release', async () => {
+    const response = await request(createApp(database, 'release-abc')).get(
+      '/api/health',
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({ status: 'ok', releaseId: 'release-abc' })
+  })
+
   it('awards direct and one-hop linked XP', async () => {
     const { app, token } = await register()
     const authorization = { Authorization: `Bearer ${token}` }
