@@ -174,7 +174,7 @@ export const SkillDialog = ({
                   )
                   .map((candidate) => (
                     <option key={candidate.id} value={candidate.id}>
-                      {candidate.emoji} {candidate.name}
+                      {AppLogic.skillLabel(candidate.name, candidate.emoji)}
                     </option>
                   ))}
               </select>

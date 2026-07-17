@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { AppLogic } from './App.logic'
 
 describe('AppLogic', () => {
+  it('formats searchable skill labels with the name first', () => {
+    expect(AppLogic.skillLabel('Archery', '🏹')).toBe('Archery 🏹')
+    expect(AppLogic.skillLabel('Cooking', null)).toBe('Cooking')
+    expect(AppLogic.skillLabel('Writing', '')).toBe('Writing')
+  })
+
   it('generates mnemonic three-character codes', () => {
     expect(AppLogic.suggestCode('Guitar')).toBe('GTR')
     expect(AppLogic.suggestCode('Korean Language')).toBe('KLA')

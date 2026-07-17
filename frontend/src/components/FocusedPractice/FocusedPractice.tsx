@@ -113,7 +113,7 @@ export const FocusedPractice = () => {
               <option value="">Choose a skill</option>
               {activeSkills.map((skill) => (
                 <option key={skill.id} value={skill.id}>
-                  {skill.emoji} {skill.name}
+                  {AppLogic.skillLabel(skill.name, skill.emoji)}
                 </option>
               ))}
             </select>

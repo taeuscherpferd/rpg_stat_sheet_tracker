@@ -1,4 +1,8 @@
 export class AppLogic {
+  static skillLabel(name: string, emoji: string | null): string {
+    return emoji === null || emoji === '' ? name : `${name} ${emoji}`
+  }
+
   static today(): string {
     const date = new Date()
     const offset = date.getTimezoneOffset() * 60_000
