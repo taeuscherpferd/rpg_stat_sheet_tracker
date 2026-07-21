@@ -27,6 +27,37 @@ describe('FocusedPracticeLogic', () => {
     ).toBe(8000)
     expect(FocusedPracticeLogic.resume(timer, 8000)).toBe(timer)
   })
+  it('pauses a running timer for completion and resumes it after cancellation', () => {
+    const completionTimer = FocusedPracticeLogic.pauseForCompletion(timer, 6500)
+
+    expect(completionTimer).toEqual({
+      timer: { ...timer, elapsedSeconds: 15, runningSince: null },
+      shouldResume: true,
+    })
+    expect(
+      FocusedPracticeLogic.cancelCompletion(
+        completionTimer.timer,
+        completionTimer.shouldResume,
+        8000,
+      ),
+    ).toEqual({ ...timer, elapsedSeconds: 15, runningSince: 8000 })
+  })
+  it('keeps a manually paused timer paused after completion is cancelled', () => {
+    const pausedTimer = { ...timer, runningSince: null }
+    const completionTimer = FocusedPracticeLogic.pauseForCompletion(
+      pausedTimer,
+      6500,
+    )
+
+    expect(completionTimer.shouldResume).toBe(false)
+    expect(
+      FocusedPracticeLogic.cancelCompletion(
+        completionTimer.timer,
+        completionTimer.shouldResume,
+        8000,
+      ),
+    ).toBe(completionTimer.timer)
+  })
   it('counts down each configured interval', () => {
     expect(FocusedPracticeLogic.durationSeconds(timer)).toBe(1500)
     expect(FocusedPracticeLogic.remaining(timer, 6500)).toBe(1485)

@@ -7,6 +7,11 @@ export interface TimerState {
   settings: FocusSettings
 }
 
+export interface CompletionTimerState {
+  timer: TimerState
+  shouldResume: boolean
+}
+
 export class FocusedPracticeLogic {
   static storageKey(userId: string): string {
     return `rlrpg.focus.${userId}`
@@ -58,6 +63,22 @@ export class FocusedPracticeLogic {
   }
   static resume(state: TimerState, now: number): TimerState {
     return state.runningSince === null ? { ...state, runningSince: now } : state
+  }
+  static pauseForCompletion(
+    state: TimerState,
+    now: number,
+  ): CompletionTimerState {
+    return {
+      timer: this.pause(state, now),
+      shouldResume: state.runningSince !== null,
+    }
+  }
+  static cancelCompletion(
+    state: TimerState,
+    shouldResume: boolean,
+    now: number,
+  ): TimerState {
+    return shouldResume ? this.resume(state, now) : state
   }
   static format(seconds: number): string {
     return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`

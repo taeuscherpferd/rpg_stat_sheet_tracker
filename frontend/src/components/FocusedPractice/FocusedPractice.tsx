@@ -33,6 +33,7 @@ export const FocusedPractice = () => {
   const [completing, setCompleting] = useState(false)
   const [rolls, setRolls] = useState<string[]>([])
   const [notes, setNotes] = useState('')
+  const resumeOnCompletionCancelRef = useRef(false)
   const { play: playCompletionSound, prepare: prepareCompletionSound } =
     useFocusCompletionSound()
   const elapsed = timer === null ? 0 : FocusedPracticeLogic.elapsed(timer, now)
@@ -80,8 +81,33 @@ export const FocusedPractice = () => {
     }
   }
   const openCompletion = () => {
-    setRolls(Array.from({ length: intervals }, () => ''))
+    if (timer === null) return
+    const completionTimer = FocusedPracticeLogic.pauseForCompletion(
+      timer,
+      Date.now(),
+    )
+    const completedIntervals = FocusRules.completedIntervals(
+      completionTimer.timer.elapsedSeconds,
+      completionTimer.timer.settings.intervalMinutes,
+    )
+    resumeOnCompletionCancelRef.current = completionTimer.shouldResume
+    setTimer(completionTimer.timer)
+    setRolls(Array.from({ length: completedIntervals }, () => ''))
     setCompleting(true)
+  }
+  const closeCompletion = () => {
+    const shouldResume = resumeOnCompletionCancelRef.current
+    resumeOnCompletionCancelRef.current = false
+    setCompleting(false)
+    setTimer((currentTimer) =>
+      currentTimer === null
+        ? null
+        : FocusedPracticeLogic.cancelCompletion(
+            currentTimer,
+            shouldResume,
+            Date.now(),
+          ),
+    )
   }
   const finish = async () => {
     if (timer === null) return
@@ -97,6 +123,7 @@ export const FocusedPractice = () => {
     ).unwrap()
     setTimer(null)
     setCompleting(false)
+    resumeOnCompletionCancelRef.current = false
     setNotes('')
     await dispatch(refreshData())
   }
@@ -217,10 +244,7 @@ export const FocusedPractice = () => {
         </div>
       )}
       {completing && timer !== null && (
-        <Modal
-          title="Roll for your practice"
-          onClose={() => setCompleting(false)}
-        >
+        <Modal title="Roll for your practice" onClose={closeCompletion}>
           <div className={styles.rollForm}>
             <p>
               You completed {intervals} interval{intervals === 1 ? '' : 's'}.
@@ -268,7 +292,7 @@ export const FocusedPractice = () => {
               />
             </label>
             <footer>
-              <button type="button" onClick={() => setCompleting(false)}>
+              <button type="button" onClick={closeCompletion}>
                 Back
               </button>
               <button
