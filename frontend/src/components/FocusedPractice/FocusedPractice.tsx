@@ -17,12 +17,18 @@ export const FocusedPractice = () => {
   const offline = connection === 'offline'
   const activeSkills = skills.filter((skill) => !skill.archived)
   const storageKey = FocusedPracticeLogic.storageKey(user?.id ?? 'guest')
+  const lastSkillStorageKey = FocusedPracticeLogic.lastSkillStorageKey(
+    user?.id ?? 'guest',
+  )
   const [timer, setTimer] = useState<TimerState | null>(() =>
     FocusedPracticeLogic.load(localStorage.getItem(storageKey)),
   )
   const [now, setNow] = useState(() => Date.now())
-  const [selectedSkillId, setSelectedSkillId] = useState(
-    activeSkills[0]?.id ?? '',
+  const [selectedSkillId, setSelectedSkillId] = useState(() =>
+    FocusedPracticeLogic.preferredSkillId(
+      localStorage.getItem(lastSkillStorageKey),
+      activeSkills.map((skill) => skill.id),
+    ),
   )
   const [completing, setCompleting] = useState(false)
   const [rolls, setRolls] = useState<string[]>([])
@@ -64,6 +70,7 @@ export const FocusedPractice = () => {
     if (settings !== null && selectedSkillId !== '') {
       completedIntervalsRef.current = 0
       void prepareCompletionSound()
+      localStorage.setItem(lastSkillStorageKey, selectedSkillId)
       setTimer({
         skillId: selectedSkillId,
         elapsedSeconds: 0,

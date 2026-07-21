@@ -47,4 +47,16 @@ describe('FocusedPracticeLogic', () => {
     expect(FocusedPracticeLogic.load(JSON.stringify(timer))).toEqual(timer)
     expect(FocusedPracticeLogic.load('{}')).toBeNull()
   })
+  it('restores the last active skill practiced', () => {
+    expect(FocusedPracticeLogic.lastSkillStorageKey('user')).toBe(
+      'rlrpg.focus.lastSkill.user',
+    )
+    expect(
+      FocusedPracticeLogic.preferredSkillId('second', ['first', 'second']),
+    ).toBe('second')
+    expect(
+      FocusedPracticeLogic.preferredSkillId('archived', ['first', 'second']),
+    ).toBe('first')
+    expect(FocusedPracticeLogic.preferredSkillId(null, [])).toBe('')
+  })
 })

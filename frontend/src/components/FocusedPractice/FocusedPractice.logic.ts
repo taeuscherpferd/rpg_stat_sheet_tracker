@@ -11,6 +11,17 @@ export class FocusedPracticeLogic {
   static storageKey(userId: string): string {
     return `rlrpg.focus.${userId}`
   }
+  static lastSkillStorageKey(userId: string): string {
+    return `rlrpg.focus.lastSkill.${userId}`
+  }
+  static preferredSkillId(
+    storedSkillId: string | null,
+    activeSkillIds: string[],
+  ): string {
+    return storedSkillId !== null && activeSkillIds.includes(storedSkillId)
+      ? storedSkillId
+      : (activeSkillIds[0] ?? '')
+  }
   static elapsed(state: TimerState, now: number): number {
     return (
       state.elapsedSeconds +
