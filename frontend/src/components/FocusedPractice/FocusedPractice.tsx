@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Check, Pause, Play, RotateCcw, Shield, Sparkles } from 'lucide-react'
+import {
+  Check,
+  Pause,
+  Play,
+  RotateCcw,
+  Shield,
+  Sparkles,
+  Trash2,
+} from 'lucide-react'
 import { FocusRules } from '@rlrpg/shared/rules'
 import { AppLogic } from '@/components/App/App.logic'
 import { Modal } from '@/components/Modal/Modal'
@@ -8,6 +16,11 @@ import { completeFocus, refreshData } from '@/store'
 import { FocusedPracticeLogic, type TimerState } from './FocusedPractice.logic'
 import { useFocusCompletionSound } from './hooks/useFocusCompletionSound'
 import styles from './FocusedPractice.module.scss'
+
+interface PracticeRoll {
+  intervalNumber: number
+  value: string
+}
 
 export const FocusedPractice = () => {
   const dispatch = useAppDispatch()
@@ -31,7 +44,7 @@ export const FocusedPractice = () => {
     ),
   )
   const [completing, setCompleting] = useState(false)
-  const [rolls, setRolls] = useState<string[]>([])
+  const [rolls, setRolls] = useState<PracticeRoll[]>([])
   const [notes, setNotes] = useState('')
   const resumeOnCompletionCancelRef = useRef(false)
   const { play: playCompletionSound, prepare: prepareCompletionSound } =
@@ -67,6 +80,9 @@ export const FocusedPractice = () => {
   const selectedSkill = activeSkills.find(
     (skill) => skill.id === (timer?.skillId ?? selectedSkillId),
   )
+  const parsedRolls = FocusedPracticeLogic.parseRollValues(
+    rolls.map((roll) => roll.value),
+  )
   const start = () => {
     if (settings !== null && selectedSkillId !== '') {
       completedIntervalsRef.current = 0
@@ -92,7 +108,12 @@ export const FocusedPractice = () => {
     )
     resumeOnCompletionCancelRef.current = completionTimer.shouldResume
     setTimer(completionTimer.timer)
-    setRolls(Array.from({ length: completedIntervals }, () => ''))
+    setRolls(
+      Array.from({ length: completedIntervals }, (_, index) => ({
+        intervalNumber: index + 1,
+        value: '',
+      })),
+    )
     setCompleting(true)
   }
   const closeCompletion = () => {
@@ -109,22 +130,46 @@ export const FocusedPractice = () => {
           ),
     )
   }
+  const resetSessionState = () => {
+    completedIntervalsRef.current = 0
+    resumeOnCompletionCancelRef.current = false
+    setTimer(null)
+    setCompleting(false)
+    setRolls([])
+    setNotes('')
+  }
+  const discard = () => {
+    if (!window.confirm('Discard this practice session?')) return
+    resetSessionState()
+  }
+  const discardInterval = (intervalNumber: number) => {
+    if (
+      !window.confirm(
+        `Discard interval ${intervalNumber}? Its roll and practice time will not be recorded.`,
+      )
+    )
+      return
+    setRolls((currentRolls) =>
+      currentRolls.filter((roll) => roll.intervalNumber !== intervalNumber),
+    )
+  }
   const finish = async () => {
-    if (timer === null) return
+    if (timer === null || parsedRolls === null) return
     await dispatch(
       completeFocus({
         skillId: timer.skillId,
         date: AppLogic.today(),
-        focusedSeconds: elapsed,
-        rolls: rolls.map(Number),
+        focusedSeconds: FocusedPracticeLogic.focusedSecondsForRetainedIntervals(
+          elapsed,
+          timer.settings.intervalMinutes,
+          rolls.length,
+        ),
+        rolls: parsedRolls,
         notes: notes || null,
         settings: timer.settings,
       }),
     ).unwrap()
-    setTimer(null)
-    setCompleting(false)
-    resumeOnCompletionCancelRef.current = false
-    setNotes('')
+    resetSessionState()
     await dispatch(refreshData())
   }
 
@@ -190,16 +235,7 @@ export const FocusedPractice = () => {
             </div>
           </div>
           <div className={styles.controls}>
-            <button
-              type="button"
-              title="Cancel session"
-              onClick={() => {
-                if (window.confirm('Discard this practice session?')) {
-                  completedIntervalsRef.current = 0
-                  setTimer(null)
-                }
-              }}
-            >
+            <button type="button" title="Cancel session" onClick={discard}>
               <RotateCcw size={20} />
             </button>
             {timer.runningSince === null ? (
@@ -248,35 +284,50 @@ export const FocusedPractice = () => {
           <div className={styles.rollForm}>
             <p>
               You completed {intervals} interval{intervals === 1 ? '' : 's'}.
-              Enter one physical d20 roll for each.
+              Enter one physical d20 roll for each interval you want to keep.
             </p>
             <div className={styles.rolls}>
-              {rolls.map((roll, index) => (
-                <label key={index}>
-                  Roll {index + 1}
-                  <input
-                    required
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={roll}
-                    onChange={(event) =>
-                      setRolls(
-                        rolls.map((item, itemIndex) =>
-                          itemIndex === index ? event.target.value : item,
-                        ),
-                      )
-                    }
-                  />
-                </label>
+              {rolls.map((roll) => (
+                <div className={styles.roll} key={roll.intervalNumber}>
+                  <label>
+                    Interval {roll.intervalNumber} roll
+                    <input
+                      required
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={roll.value}
+                      onChange={(event) =>
+                        setRolls(
+                          rolls.map((item) =>
+                            item.intervalNumber === roll.intervalNumber
+                              ? { ...item, value: event.target.value }
+                              : item,
+                          ),
+                        )
+                      }
+                    />
+                  </label>
+                  {rolls.length > 1 && (
+                    <button
+                      aria-label={`Discard interval ${roll.intervalNumber}`}
+                      type="button"
+                      title={`Discard interval ${roll.intervalNumber}`}
+                      onClick={() => discardInterval(roll.intervalNumber)}
+                    >
+                      <Trash2 size={16} />
+                      Discard
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
-            {rolls.every((roll) => Number(roll) >= 1 && Number(roll) <= 20) && (
+            {parsedRolls !== null && (
               <p className={styles.reward}>
                 Award:{' '}
                 <strong>
                   {FocusRules.totalXp(
-                    rolls.map(Number),
+                    parsedRolls,
                     timer.settings,
                   ).toLocaleString()}{' '}
                   XP
@@ -292,17 +343,19 @@ export const FocusedPractice = () => {
               />
             </label>
             <footer>
+              <button
+                className={styles.discard}
+                type="button"
+                onClick={discard}
+              >
+                Discard session
+              </button>
               <button type="button" onClick={closeCompletion}>
                 Back
               </button>
               <button
                 className={styles.confirm}
-                disabled={
-                  offline ||
-                  !rolls.every(
-                    (roll) => Number(roll) >= 1 && Number(roll) <= 20,
-                  )
-                }
+                disabled={offline || parsedRolls === null}
                 type="button"
                 onClick={() => void finish()}
               >

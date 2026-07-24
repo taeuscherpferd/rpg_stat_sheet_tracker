@@ -177,12 +177,30 @@
     color: #fff;
     background: var(--forest);
   }
+  footer .discard {
+    margin-right: auto;
+    color: var(--rust);
+  }
 }
 .rolls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 10px;
   margin: 16px 0;
+}
+.roll {
+  display: grid;
+  gap: 6px;
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border: 0;
+    color: var(--rust);
+    background: transparent;
+  }
 }
 .reward {
   padding: 10px;

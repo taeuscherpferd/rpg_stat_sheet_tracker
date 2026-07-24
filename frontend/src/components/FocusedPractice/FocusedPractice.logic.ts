@@ -1,4 +1,5 @@
 import type { FocusSettings } from '@rlrpg/shared/contracts'
+import { FocusRules } from '@rlrpg/shared/rules'
 
 export interface TimerState {
   skillId: string
@@ -79,6 +80,31 @@ export class FocusedPracticeLogic {
     now: number,
   ): TimerState {
     return shouldResume ? this.resume(state, now) : state
+  }
+  static focusedSecondsForRetainedIntervals(
+    focusedSeconds: number,
+    intervalMinutes: number,
+    retainedIntervals: number,
+  ): number {
+    const completedIntervals = FocusRules.completedIntervals(
+      focusedSeconds,
+      intervalMinutes,
+    )
+    const discardedIntervals =
+      completedIntervals -
+      Math.min(Math.max(retainedIntervals, 0), completedIntervals)
+    return focusedSeconds - discardedIntervals * intervalMinutes * 60
+  }
+  static parseRollValues(values: string[]): number[] | null {
+    if (values.length === 0) return null
+    const rolls: number[] = []
+    for (const value of values) {
+      if (value.trim() === '') return null
+      const roll = Number(value)
+      if (!Number.isInteger(roll) || roll < 1 || roll > 20) return null
+      rolls.push(roll)
+    }
+    return rolls
   }
   static format(seconds: number): string {
     return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`

@@ -58,6 +58,33 @@ describe('FocusedPracticeLogic', () => {
       ),
     ).toBe(completionTimer.timer)
   })
+  it('removes discarded interval time while preserving partial time', () => {
+    expect(
+      FocusedPracticeLogic.focusedSecondsForRetainedIntervals(3300, 25, 2),
+    ).toBe(3300)
+    expect(
+      FocusedPracticeLogic.focusedSecondsForRetainedIntervals(3300, 25, 1),
+    ).toBe(1800)
+    expect(
+      FocusedPracticeLogic.focusedSecondsForRetainedIntervals(3300, 25, 0),
+    ).toBe(300)
+    expect(
+      FocusedPracticeLogic.focusedSecondsForRetainedIntervals(3300, 25, -1),
+    ).toBe(300)
+    expect(
+      FocusedPracticeLogic.focusedSecondsForRetainedIntervals(3300, 25, 3),
+    ).toBe(3300)
+  })
+  it('parses only complete integer d20 rolls', () => {
+    expect(FocusedPracticeLogic.parseRollValues(['1', '20'])).toEqual([1, 20])
+    expect(FocusedPracticeLogic.parseRollValues([])).toBeNull()
+    expect(FocusedPracticeLogic.parseRollValues([''])).toBeNull()
+    expect(FocusedPracticeLogic.parseRollValues(['  '])).toBeNull()
+    expect(FocusedPracticeLogic.parseRollValues(['roll'])).toBeNull()
+    expect(FocusedPracticeLogic.parseRollValues(['1.5'])).toBeNull()
+    expect(FocusedPracticeLogic.parseRollValues(['0'])).toBeNull()
+    expect(FocusedPracticeLogic.parseRollValues(['21'])).toBeNull()
+  })
   it('counts down each configured interval', () => {
     expect(FocusedPracticeLogic.durationSeconds(timer)).toBe(1500)
     expect(FocusedPracticeLogic.remaining(timer, 6500)).toBe(1485)
