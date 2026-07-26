@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest'
-import type { SkillResponse } from '@rlrpg/shared/contracts'
 import type {
   SkillXpAwardPresentation,
   XpProgressStage,
 } from '@/components/XpCelebration/XpCelebration.logic'
+import type { SkillResponse } from '@rlrpg/shared/contracts'
+import { describe, expect, it } from 'vitest'
 import { SkillCardLogic } from './SkillCard.logic'
 
 const makeSkill = (): SkillResponse => ({

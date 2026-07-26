@@ -1,8 +1,8 @@
-import type { SkillLinkResponse, SkillResponse } from '@rlrpg/shared/contracts'
 import type {
   SkillXpAwardPresentation,
   XpProgressStage,
 } from '@/components/XpCelebration/XpCelebration.logic'
+import type { SkillLinkResponse, SkillResponse } from '@rlrpg/shared/contracts'
 
 export type SkillCardProgress = Pick<
   SkillResponse,

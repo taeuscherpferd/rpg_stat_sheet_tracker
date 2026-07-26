@@ -1,10 +1,10 @@
-import type { CSSProperties } from 'react'
-import { Link2, Pencil } from 'lucide-react'
-import type { SkillResponse } from '@rlrpg/shared/contracts'
 import {
   type SkillXpAwardPresentation,
   type XpProgressStage,
 } from '@/components/XpCelebration/XpCelebration.logic'
+import type { SkillResponse } from '@rlrpg/shared/contracts'
+import { Link2, Pencil } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { SkillCardLogic } from './SkillCard.logic'
 import styles from './SkillCard.module.scss'
 
