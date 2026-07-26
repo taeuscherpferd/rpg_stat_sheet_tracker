@@ -16,11 +16,16 @@ The React client runs at `http://localhost:5173` and proxies API requests to Exp
 For a production build:
 
 ```bash
-pnpm build
+pnpm smoke
 pnpm --filter @rlrpg/backend start
 ```
 
-Express serves `frontend/dist` in production. Set `PORT` to change the HTTP port and `DATABASE_PATH` to choose the SQLite file location. The backend uses Node 24's built-in `node:sqlite` module, so no native database package or separate SQLite installation is required.
+The smoke command builds every workspace package, starts the compiled backend
+against a temporary database, and verifies its health endpoint. Express serves
+`frontend/dist` in production. Set `PORT` to change the HTTP port and
+`DATABASE_PATH` to choose the SQLite file location. The backend uses Node 24's
+built-in `node:sqlite` module, so no native database package or separate SQLite
+installation is required.
 
 ## Progressive Web App
 
@@ -55,6 +60,7 @@ service-worker updates, storage, and offline startup.
 - `pnpm test`: run frontend and backend tests.
 - `pnpm lint`: run ESLint and TypeScript checks.
 - `pnpm build`: type-check and build all packages.
+- `pnpm smoke`: build and verify the compiled production server.
 - `pnpm format:check`: verify Prettier formatting.
 
 ## Homelab Deployment

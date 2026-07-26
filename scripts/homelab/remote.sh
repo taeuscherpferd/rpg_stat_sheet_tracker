@@ -204,7 +204,7 @@ printf '%s\n' "$release_id" > "$release_directory/.release-id"
 
 cd "$release_directory"
 pnpm install --frozen-lockfile
-pnpm build
+pnpm smoke
 
 current_link="$app_root/current"
 previous_release="$(readlink -f "$current_link" 2>/dev/null || true)"

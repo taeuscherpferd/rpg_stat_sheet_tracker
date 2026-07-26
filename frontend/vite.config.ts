@@ -48,6 +48,9 @@ export default defineConfig({
       },
     }),
   ],
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    conditions: ['source'],
+  },
   server: { port: 5173, proxy: { '/api': 'http://localhost:3000' } },
 })

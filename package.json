@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "pnpm --parallel --filter @rlrpg/backend --filter @rlrpg/frontend dev",
     "build": "pnpm -r build",
-    "test": "pnpm -r test",
+    "smoke": "pnpm build && node scripts/smoke-production.mjs",
+    "test": "pnpm --filter @rlrpg/shared build && pnpm -r test",
     "lint": "pnpm -r lint",
     "format:check": "prettier --check .",
     "format": "prettier --write .",

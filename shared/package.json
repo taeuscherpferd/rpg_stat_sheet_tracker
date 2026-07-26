@@ -4,8 +4,16 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./contracts": "./src/contracts.ts",
-    "./rules": "./src/rules.ts"
+    "./contracts": {
+      "source": "./src/contracts.ts",
+      "types": "./dist/contracts.d.ts",
+      "default": "./dist/contracts.js"
+    },
+    "./rules": {
+      "source": "./src/rules.ts",
+      "types": "./dist/rules.d.ts",
+      "default": "./dist/rules.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
