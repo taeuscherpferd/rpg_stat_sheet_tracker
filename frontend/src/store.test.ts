@@ -27,6 +27,7 @@ const settings: FocusSettings = {
   normalPercentPerPip: 10,
   naturalOneBonusPercent: 50,
   naturalTwentyBonusPercent: 50,
+  maximumManualXp: 2000,
 }
 const apiKeys: ApiKeyResponse[] = [
   {
@@ -39,7 +40,7 @@ const apiKeys: ApiKeyResponse[] = [
   },
 ]
 const snapshot: AppSnapshot = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   savedAt: '2026-07-16T12:00:00.000Z',
   user,
   skills: [],

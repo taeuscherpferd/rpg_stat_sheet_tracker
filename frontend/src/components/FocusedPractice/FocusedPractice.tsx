@@ -11,6 +11,10 @@ import {
 import { FocusRules } from '@rlrpg/shared/rules'
 import { AppLogic } from '@/components/App/App.logic'
 import { Modal } from '@/components/Modal/Modal'
+import {
+  XpCelebrationLogic,
+  type XpAwardPresentation,
+} from '@/components/XpCelebration/XpCelebration.logic'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { completeFocus, refreshData } from '@/store'
 import { FocusedPracticeLogic, type TimerState } from './FocusedPractice.logic'
@@ -22,7 +26,11 @@ interface PracticeRoll {
   value: string
 }
 
-export const FocusedPractice = () => {
+interface FocusedPracticeProps {
+  onXpAwarded: (presentation: XpAwardPresentation) => void
+}
+
+export const FocusedPractice = ({ onXpAwarded }: FocusedPracticeProps) => {
   const dispatch = useAppDispatch()
   const { user, skills, settings, connection } = useAppSelector(
     (state) => state.app,
@@ -155,7 +163,7 @@ export const FocusedPractice = () => {
   }
   const finish = async () => {
     if (timer === null || parsedRolls === null) return
-    await dispatch(
+    const entry = await dispatch(
       completeFocus({
         skillId: timer.skillId,
         date: AppLogic.today(),
@@ -170,7 +178,15 @@ export const FocusedPractice = () => {
       }),
     ).unwrap()
     resetSessionState()
-    await dispatch(refreshData())
+    const refreshAction = await dispatch(refreshData())
+    if (refreshData.fulfilled.match(refreshAction)) {
+      onXpAwarded(
+        XpCelebrationLogic.createPresentation(
+          refreshAction.payload.skills,
+          entry.awards,
+        ),
+      )
+    }
   }
 
   if (settings === null) return null

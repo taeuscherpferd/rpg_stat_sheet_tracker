@@ -70,6 +70,7 @@ export class LedgerService {
     origin: string | null,
   ): XpEntryResponse {
     this.requireSkill(userId, input.skillId, false)
+    this.requireAllowedManualXp(userId, input.xp)
     const entryId = randomUUID()
     this.database.transaction(() => {
       this.insertEntry(entryId, userId, input, source, origin)
@@ -91,6 +92,7 @@ export class LedgerService {
         'ENTRY_LOCKED',
       )
     }
+    this.requireAllowedManualXp(userId, input.xp)
     const snapshots = this.database.connection
       .prepare(
         'SELECT skill_id, percentage, kind FROM xp_awards WHERE entry_id = ?',
@@ -196,7 +198,8 @@ export class LedgerService {
       .prepare(
         `
       UPDATE focus_settings SET interval_minutes = ?, base_xp = ?, normal_percent = ?,
-        natural_one_percent = ?, natural_twenty_percent = ? WHERE user_id = ?
+        natural_one_percent = ?, natural_twenty_percent = ?, maximum_manual_xp = ?
+        WHERE user_id = ?
     `,
       )
       .run(
@@ -205,8 +208,20 @@ export class LedgerService {
         settings.normalPercentPerPip,
         settings.naturalOneBonusPercent,
         settings.naturalTwentyBonusPercent,
+        settings.maximumManualXp,
         userId,
       )
+  }
+
+  private requireAllowedManualXp(userId: string, xp: number): void {
+    const maximumManualXp = this.database.getSettings(userId).maximumManualXp
+    if (xp <= maximumManualXp) return
+
+    throw new DomainError(
+      `XP entries cannot exceed ${maximumManualXp.toLocaleString()} XP`,
+      400,
+      'XP_LIMIT_EXCEEDED',
+    )
   }
 
   private writeSkill(

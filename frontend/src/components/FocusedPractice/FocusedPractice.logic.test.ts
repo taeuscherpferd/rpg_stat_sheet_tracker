@@ -11,6 +11,7 @@ const timer: TimerState = {
     normalPercentPerPip: 1,
     naturalOneBonusPercent: 0,
     naturalTwentyBonusPercent: 50,
+    maximumManualXp: 2000,
   },
 }
 
@@ -103,6 +104,20 @@ describe('FocusedPracticeLogic', () => {
     expect(FocusedPracticeLogic.load(null)).toBeNull()
     expect(FocusedPracticeLogic.load('{bad')).toBeNull()
     expect(FocusedPracticeLogic.load(JSON.stringify(timer))).toEqual(timer)
+    expect(
+      FocusedPracticeLogic.load(
+        JSON.stringify({
+          ...timer,
+          settings: {
+            intervalMinutes: 25,
+            baseXp: 100,
+            normalPercentPerPip: 1,
+            naturalOneBonusPercent: 0,
+            naturalTwentyBonusPercent: 50,
+          },
+        }),
+      )?.settings.maximumManualXp,
+    ).toBe(2000)
     expect(FocusedPracticeLogic.load('{}')).toBeNull()
   })
   it('restores the last active skill practiced', () => {

@@ -6,6 +6,7 @@ import type {
   XpAwardResponse,
   XpEntryResponse,
 } from '@rlrpg/shared/contracts'
+import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { ProgressionLogic } from './Progression.logic.js'
 
 interface SkillRow {
@@ -133,7 +134,8 @@ export class AppDatabase {
         user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
         interval_minutes INTEGER NOT NULL DEFAULT 25, base_xp INTEGER NOT NULL DEFAULT 100,
         normal_percent INTEGER NOT NULL DEFAULT 1, natural_one_percent INTEGER NOT NULL DEFAULT 0,
-        natural_twenty_percent INTEGER NOT NULL DEFAULT 50
+        natural_twenty_percent INTEGER NOT NULL DEFAULT 50,
+        maximum_manual_xp INTEGER NOT NULL DEFAULT ${DEFAULT_MAXIMUM_MANUAL_XP}
       );
       CREATE TABLE IF NOT EXISTS api_keys (
         id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -176,6 +178,16 @@ export class AppDatabase {
     this.connection.exec(
       'UPDATE skills SET xp_bar_color = header_color WHERE xp_bar_color != header_color',
     )
+    const settingsColumns = this.connection
+      .prepare('PRAGMA table_info(focus_settings)')
+      .all() as SqlRow<TableInfoRow>[]
+    if (
+      !settingsColumns.some((column) => column.name === 'maximum_manual_xp')
+    ) {
+      this.connection.exec(
+        `ALTER TABLE focus_settings ADD COLUMN maximum_manual_xp INTEGER NOT NULL DEFAULT ${DEFAULT_MAXIMUM_MANUAL_XP}`,
+      )
+    }
   }
 
   listSkills(userId: string, includeArchived = true): SkillResponse[] {
@@ -290,6 +302,7 @@ export class AppDatabase {
       normal_percent: number
       natural_one_percent: number
       natural_twenty_percent: number
+      maximum_manual_xp: number
     }
     return {
       intervalMinutes: row.interval_minutes,
@@ -297,6 +310,7 @@ export class AppDatabase {
       normalPercentPerPip: row.normal_percent,
       naturalOneBonusPercent: row.natural_one_percent,
       naturalTwentyBonusPercent: row.natural_twenty_percent,
+      maximumManualXp: row.maximum_manual_xp,
     }
   }
 

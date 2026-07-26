@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertCircle, CloudOff, X } from 'lucide-react'
 import { AuthScreen } from '@/components/AuthScreen/AuthScreen'
 import { FocusedPractice } from '@/components/FocusedPractice/FocusedPractice'
 import { Header, type AppPage } from '@/components/Header/Header'
 import { Settings } from '@/components/Settings/Settings'
 import { SkillSheet } from '@/components/SkillSheet/SkillSheet'
+import type {
+  XpAwardPresentation,
+  XpCelebrationEvent,
+} from '@/components/XpCelebration/XpCelebration.logic'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { clearError, connectionChanged, initialize, refreshData } from '@/store'
 import styles from './App.module.scss'
@@ -13,7 +17,26 @@ export const App = () => {
   const dispatch = useAppDispatch()
   const { user, initialized, hasLoadedData, connection, lastSyncedAt, error } =
     useAppSelector((state) => state.app)
+  const userId = user?.id ?? null
   const [page, setPage] = useState<AppPage>('skills')
+  const [xpCelebration, setXpCelebration] = useState<XpCelebrationEvent | null>(
+    null,
+  )
+  const celebrationIdRef = useRef(0)
+
+  const presentXpAward = useCallback(
+    (presentation: XpAwardPresentation) => {
+      if (presentation.awards.length === 0 || userId === null) return
+      celebrationIdRef.current += 1
+      setXpCelebration({
+        id: celebrationIdRef.current,
+        userId,
+        awards: presentation.awards,
+      })
+      setPage('skills')
+    },
+    [userId],
+  )
 
   useEffect(() => {
     void dispatch(initialize())
@@ -80,8 +103,16 @@ export const App = () => {
       <main
         className={`${styles.main} ${page === 'settings' ? styles.settingsMain : ''}`}
       >
-        {page === 'skills' && <SkillSheet />}
-        {page === 'focus' && <FocusedPractice />}
+        {page === 'skills' && (
+          <SkillSheet
+            xpCelebration={
+              xpCelebration?.userId === user.id ? xpCelebration : null
+            }
+            onXpCelebrationComplete={() => setXpCelebration(null)}
+            onXpAwarded={presentXpAward}
+          />
+        )}
+        {page === 'focus' && <FocusedPractice onXpAwarded={presentXpAward} />}
         {page === 'settings' && <Settings />}
       </main>
     </div>

@@ -12,6 +12,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import type { FocusSettings, XpEntryResponse } from '@rlrpg/shared/contracts'
+import { MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { downloadExport } from '@/api'
 import { AccountSettings } from '@/components/AccountSettings/AccountSettings'
 import { HistoryEditDialog } from '@/components/Settings/HistoryEditDialog'
@@ -151,9 +152,10 @@ export const Settings = () => {
               className={styles.settingsForm}
               onSubmit={(event) => void savePractice(event)}
             >
-              <h2>Focused Practice rules</h2>
+              <h2>XP and practice rules</h2>
               <p>
-                Changes apply to new sessions. A running timer keeps its
+                The XP limit applies to manual and automation entries. Practice
+                changes apply to new sessions; a running timer keeps its
                 starting rules.
               </p>
               <div className={styles.fieldGrid}>
@@ -183,6 +185,22 @@ export const Settings = () => {
                     value={draft.baseXp}
                     onChange={(event) =>
                       setDraft({ ...draft, baseXp: Number(event.target.value) })
+                    }
+                  />
+                </label>
+                <label>
+                  Maximum manual XP <span>per entry</span>
+                  <input
+                    type="number"
+                    disabled={offline}
+                    min={1}
+                    max={MAXIMUM_MANUAL_XP}
+                    value={draft.maximumManualXp}
+                    onChange={(event) =>
+                      setDraft({
+                        ...draft,
+                        maximumManualXp: Number(event.target.value),
+                      })
                     }
                   />
                 </label>

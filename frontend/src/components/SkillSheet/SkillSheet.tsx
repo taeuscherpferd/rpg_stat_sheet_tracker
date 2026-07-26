@@ -1,15 +1,16 @@
-import { type CSSProperties, useState } from 'react'
-import {
-  ArrowUpDown,
-  Link2,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Search,
-} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowUpDown, Plus, RotateCcw, Search } from 'lucide-react'
 import type { SkillResponse } from '@rlrpg/shared/contracts'
+import { LevelUpCelebration } from '@/components/LevelUpCelebration/LevelUpCelebration'
+import { SkillCard } from '@/components/SkillCard/SkillCard'
 import { SkillDialog } from '@/components/SkillDialog/SkillDialog'
+import { useXpAwardAnimation } from '@/components/SkillSheet/hooks/useXpAwardAnimation'
 import { XpDialog } from '@/components/XpDialog/XpDialog'
+import {
+  XpCelebrationLogic,
+  type XpAwardPresentation,
+  type XpCelebrationEvent,
+} from '@/components/XpCelebration/XpCelebration.logic'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { refreshData, setSkillArchived } from '@/store'
 import {
@@ -18,11 +19,17 @@ import {
 } from '@/components/SkillSheet/SkillSheet.logic'
 import styles from './SkillSheet.module.scss'
 
-type SkillCardStyle = CSSProperties & {
-  '--skill-color': string
+interface SkillSheetProps {
+  xpCelebration: XpCelebrationEvent | null
+  onXpCelebrationComplete: () => void
+  onXpAwarded: (presentation: XpAwardPresentation) => void
 }
 
-export const SkillSheet = () => {
+export const SkillSheet = ({
+  xpCelebration,
+  onXpCelebrationComplete,
+  onXpAwarded,
+}: SkillSheetProps) => {
   const dispatch = useAppDispatch()
   const { skills, connection } = useAppSelector((state) => state.app)
   const offline = connection === 'offline'
@@ -33,6 +40,25 @@ export const SkillSheet = () => {
   const [editing, setEditing] = useState<SkillResponse | null | 'new'>(null)
   const [logging, setLogging] = useState<SkillResponse | null>(null)
   const visibleSkills = SkillSheetLogic.filterAndSort(active, filter, sort)
+  const { progressBySkillId, readyForCelebration } =
+    useXpAwardAnimation(xpCelebration)
+  const levelUps =
+    xpCelebration === null ? [] : XpCelebrationLogic.levelUps(xpCelebration)
+
+  useEffect(() => {
+    if (
+      xpCelebration !== null &&
+      readyForCelebration &&
+      levelUps.length === 0
+    ) {
+      onXpCelebrationComplete()
+    }
+  }, [
+    levelUps.length,
+    onXpCelebrationComplete,
+    readyForCelebration,
+    xpCelebration,
+  ])
 
   const archive = async (skill: SkillResponse) => {
     await dispatch(
@@ -92,74 +118,24 @@ export const SkillSheet = () => {
         </div>
       ) : (
         <div className={styles.list}>
-          {visibleSkills.map((skill) => (
-            <article
-              className={styles.skill}
-              key={skill.id}
-              style={
-                {
-                  '--skill-color': skill.headerColor,
-                } as SkillCardStyle
-              }
-            >
-              <button
-                className={styles.mainAction}
-                type="button"
-                disabled={offline}
-                onClick={() => setLogging(skill)}
-              >
-                <span className={styles.icon}>
-                  {skill.emoji ?? skill.code.slice(0, 1)}
-                </span>
-                <span className={styles.identity}>
-                  <strong>{skill.name}</strong>
-                  <small>{skill.code}</small>
-                </span>
-                <span className={styles.level}>
-                  Level <strong>{skill.level}</strong>
-                </span>
-                <span className={styles.progress}>
-                  <progress
-                    className={styles.track}
-                    max={skill.nextLevelXp}
-                    value={skill.levelXp}
-                  />
-                </span>
-                {skill.tags.length > 0 && (
-                  <span className={styles.tags}>
-                    {skill.tags.map((tag) => (
-                      <small key={tag}>{tag}</small>
-                    ))}
-                  </span>
-                )}
-              </button>
-              <div className={styles.actions}>
-                <button
-                  type="button"
-                  title="Edit skill"
-                  disabled={offline}
-                  onClick={() => setEditing(skill)}
-                >
-                  <Pencil size={17} />
-                </button>
-                {skill.links.length > 0 && (
-                  <span
-                    title={skill.links
-                      .map(
-                        (link) => `${link.targetSkillName} ${link.percentage}%`,
-                      )
-                      .join(', ')}
-                  >
-                    <Link2 size={16} /> {skill.links.length}
-                  </span>
-                )}
-                <small className={styles.xpCount}>
-                  {skill.levelXp.toLocaleString()} /{' '}
-                  {skill.nextLevelXp.toLocaleString()} XP
-                </small>
-              </div>
-            </article>
-          ))}
+          {visibleSkills.map((skill) => {
+            const animatedProgress = progressBySkillId[skill.id]
+            const awardedXp = xpCelebration?.awards.find(
+              (award) => award.skillId === skill.id,
+            )
+
+            return (
+              <SkillCard
+                key={skill.id}
+                skill={skill}
+                animatedProgress={animatedProgress}
+                awardedXp={awardedXp}
+                offline={offline}
+                onEdit={setEditing}
+                onLogXp={setLogging}
+              />
+            )
+          })}
         </div>
       )}
       {archived.length > 0 && (
@@ -197,7 +173,18 @@ export const SkillSheet = () => {
         />
       )}
       {logging !== null && (
-        <XpDialog skill={logging} onClose={() => setLogging(null)} />
+        <XpDialog
+          skill={logging}
+          onClose={() => setLogging(null)}
+          onXpAwarded={onXpAwarded}
+        />
+      )}
+      {readyForCelebration && levelUps.length > 0 && (
+        <LevelUpCelebration
+          key={xpCelebration?.id}
+          awards={levelUps}
+          onComplete={onXpCelebrationComplete}
+        />
       )}
     </section>
   )

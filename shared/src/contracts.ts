@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { MAXIMUM_MANUAL_XP } from './rules.js'
 
 export const skillCodeSchema = z.string().regex(/^[A-Z0-9]{3}$/)
 export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -47,7 +48,7 @@ export const skillInputSchema = z.object({
 export const manualEntrySchema = z.object({
   skillId: z.string().uuid(),
   date: dateSchema,
-  xp: z.number().int().positive().max(1_000_000),
+  xp: z.number().int().positive().max(MAXIMUM_MANUAL_XP),
   minutes: z.number().int().positive().max(100_000).nullable().optional(),
   activity: z.string().trim().max(120).nullable().optional(),
   notes: z.string().trim().max(4000).nullable().optional(),
@@ -73,6 +74,7 @@ export const focusSettingsSchema = z.object({
   normalPercentPerPip: z.number().int().min(0).max(100),
   naturalOneBonusPercent: z.number().int().min(0).max(500),
   naturalTwentyBonusPercent: z.number().int().min(0).max(500),
+  maximumManualXp: z.number().int().min(1).max(MAXIMUM_MANUAL_XP),
 })
 
 export const focusSessionSchema = z.object({

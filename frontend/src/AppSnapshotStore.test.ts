@@ -4,7 +4,7 @@ import type { AppSnapshot } from '@/AppSnapshotStore'
 import { AppSnapshotStore } from '@/AppSnapshotStore'
 
 const snapshot: AppSnapshot = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   savedAt: '2026-07-16T12:00:00.000Z',
   user: { id: 'user-1', username: 'ranger', timezone: 'America/Denver' },
   skills: [],
@@ -15,6 +15,7 @@ const snapshot: AppSnapshot = {
     normalPercentPerPip: 10,
     naturalOneBonusPercent: 50,
     naturalTwentyBonusPercent: 50,
+    maximumManualXp: 2000,
   },
 }
 
@@ -38,5 +39,39 @@ describe('AppSnapshotStore', () => {
     await AppSnapshotStore.save(snapshot, factory)
     await AppSnapshotStore.clear(factory)
     expect(await AppSnapshotStore.load(factory)).toBeNull()
+  })
+
+  it('adds the default manual XP limit to version one snapshots', async () => {
+    const factory = new IDBFactory()
+    const legacySnapshot = {
+      ...snapshot,
+      schemaVersion: 1 as const,
+      settings: {
+        intervalMinutes: 25,
+        baseXp: 10,
+        normalPercentPerPip: 10,
+        naturalOneBonusPercent: 50,
+        naturalTwentyBonusPercent: 50,
+      },
+    }
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = factory.open('rlrpg-offline', 1)
+      request.addEventListener('upgradeneeded', () => {
+        request.result.createObjectStore('snapshots')
+      })
+      request.addEventListener('success', () => resolve(request.result))
+      request.addEventListener('error', () => reject(request.error))
+    })
+    const transaction = database.transaction('snapshots', 'readwrite')
+    transaction.objectStore('snapshots').put(legacySnapshot, 'current-user')
+    await new Promise<void>((resolve) =>
+      transaction.addEventListener('complete', () => resolve()),
+    )
+    database.close()
+
+    expect(await AppSnapshotStore.load(factory)).toMatchObject({
+      schemaVersion: 2,
+      settings: { maximumManualXp: 2000 },
+    })
   })
 })

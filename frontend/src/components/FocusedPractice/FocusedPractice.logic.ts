@@ -1,5 +1,5 @@
 import type { FocusSettings } from '@rlrpg/shared/contracts'
-import { FocusRules } from '@rlrpg/shared/rules'
+import { DEFAULT_MAXIMUM_MANUAL_XP, FocusRules } from '@rlrpg/shared/rules'
 
 export interface TimerState {
   skillId: string
@@ -11,6 +11,10 @@ export interface TimerState {
 export interface CompletionTimerState {
   timer: TimerState
   shouldResume: boolean
+}
+
+type StoredTimerState = Omit<TimerState, 'settings'> & {
+  settings: FocusSettings | Omit<FocusSettings, 'maximumManualXp'>
 }
 
 export class FocusedPracticeLogic {
@@ -112,10 +116,19 @@ export class FocusedPracticeLogic {
   static load(value: string | null): TimerState | null {
     if (value === null) return null
     try {
-      const parsed = JSON.parse(value) as TimerState
+      const parsed = JSON.parse(value) as StoredTimerState
       return typeof parsed.skillId === 'string' &&
         typeof parsed.elapsedSeconds === 'number'
-        ? parsed
+        ? {
+            ...parsed,
+            settings: {
+              ...parsed.settings,
+              maximumManualXp:
+                'maximumManualXp' in parsed.settings
+                  ? parsed.settings.maximumManualXp
+                  : DEFAULT_MAXIMUM_MANUAL_XP,
+            },
+          }
         : null
     } catch {
       return null

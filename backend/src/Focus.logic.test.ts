@@ -7,6 +7,7 @@ const settings = {
   normalPercentPerPip: 1,
   naturalOneBonusPercent: 0,
   naturalTwentyBonusPercent: 50,
+  maximumManualXp: 2000,
 }
 
 describe('FocusLogic', () => {

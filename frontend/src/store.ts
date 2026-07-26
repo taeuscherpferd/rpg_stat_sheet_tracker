@@ -214,7 +214,7 @@ export const addXp = createAsyncThunk(
     notes: string | null
   }) => {
     try {
-      await api.post('/xp-entries', input)
+      return (await api.post<XpEntryResponse>('/xp-entries', input)).data
     } catch (error) {
       return rejected(error)
     }
@@ -269,7 +269,7 @@ export const completeFocus = createAsyncThunk(
     settings: FocusSettings
   }) => {
     try {
-      await api.post('/focus-sessions', input)
+      return (await api.post<XpEntryResponse>('/focus-sessions', input)).data
     } catch (error) {
       return rejected(error)
     }

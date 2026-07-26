@@ -63,6 +63,44 @@ describe('RLRPG API', () => {
     ).toEqual([51, 12])
   })
 
+  it('enforces the configurable manual XP limit', async () => {
+    const { app, token } = await register()
+    const authorization = { Authorization: `Bearer ${token}` }
+    const skill = await request(app)
+      .post('/api/skills')
+      .set(authorization)
+      .send({ name: 'Running', code: 'RUN', links: [] })
+
+    const defaultRejected = await request(app)
+      .post('/api/xp-entries')
+      .set(authorization)
+      .send({
+        skillId: skill.body.id,
+        date: '2026-07-15',
+        xp: 2001,
+      })
+    expect(defaultRejected.status).toBe(400)
+    expect(defaultRejected.body.error.code).toBe('XP_LIMIT_EXCEEDED')
+
+    const settings = await request(app).get('/api/settings').set(authorization)
+    expect(settings.body.maximumManualXp).toBe(2000)
+    const updatedSettings = await request(app)
+      .put('/api/settings')
+      .set(authorization)
+      .send({ ...settings.body, maximumManualXp: 3000 })
+    expect(updatedSettings.status).toBe(200)
+
+    const accepted = await request(app)
+      .post('/api/xp-entries')
+      .set(authorization)
+      .send({
+        skillId: skill.body.id,
+        date: '2026-07-15',
+        xp: 2500,
+      })
+    expect(accepted.status).toBe(201)
+  })
+
   it('starts an imported skill at the selected level without a history entry', async () => {
     const { app, token } = await register()
     const authorization = { Authorization: `Bearer ${token}` }

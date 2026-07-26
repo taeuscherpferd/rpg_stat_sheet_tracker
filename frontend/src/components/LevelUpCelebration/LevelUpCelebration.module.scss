@@ -1,0 +1,272 @@
+.celebration {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  padding: 28px 24px 24px;
+  text-align: center;
+  background:
+    radial-gradient(
+      circle at 50% 12%,
+      rgba(181, 138, 60, 0.23),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(255, 248, 232, 0.2), rgba(181, 138, 60, 0.08));
+
+  h3 {
+    margin: 2px 0 20px;
+    color: var(--rust);
+    font:
+      700 27px 'Cinzel',
+      serif;
+  }
+
+  > button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 10px 16px;
+    border: 1px solid #283d33;
+    border-radius: 3px;
+    color: #fff9e9;
+    background: var(--forest);
+  }
+}
+
+.emblem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gold);
+  animation: emblem-arrival 650ms cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+
+  > span {
+    width: 78px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    color: var(--rust);
+    background: #ead7aa;
+    box-shadow:
+      0 0 0 7px rgba(181, 138, 60, 0.13),
+      0 8px 22px rgba(80, 55, 24, 0.18);
+    font-size: 40px;
+  }
+}
+
+.kicker {
+  margin: 19px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.levels {
+  width: min(360px, 100%);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+
+  > span {
+    display: grid;
+    gap: 3px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: var(--ink);
+    font:
+      700 33px 'Cinzel',
+      serif;
+  }
+
+  > svg {
+    color: var(--gold);
+  }
+}
+
+.levels .newLevel strong {
+  color: var(--rust);
+  animation: new-level-glow 900ms ease-in-out 500ms both;
+}
+
+.summary {
+  min-height: 22px;
+  margin: 16px 0 0;
+  color: var(--ink-soft);
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  i {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    width: 7px;
+    height: 13px;
+    border-radius: 1px;
+    background: var(--gold);
+    animation: confetti-fall 1800ms ease-out both;
+  }
+
+  i:nth-child(3n + 1) {
+    background: var(--rust);
+  }
+
+  i:nth-child(3n + 2) {
+    background: var(--forest-light);
+  }
+
+  i:nth-child(1) {
+    margin-left: -47%;
+    animation-delay: 70ms;
+  }
+
+  i:nth-child(2) {
+    margin-left: -40%;
+    animation-delay: 260ms;
+  }
+
+  i:nth-child(3) {
+    margin-left: -34%;
+    animation-delay: 20ms;
+  }
+
+  i:nth-child(4) {
+    margin-left: -29%;
+    animation-delay: 410ms;
+  }
+
+  i:nth-child(5) {
+    margin-left: -23%;
+    animation-delay: 150ms;
+  }
+
+  i:nth-child(6) {
+    margin-left: -17%;
+    animation-delay: 330ms;
+  }
+
+  i:nth-child(7) {
+    margin-left: -11%;
+    animation-delay: 90ms;
+  }
+
+  i:nth-child(8) {
+    margin-left: -6%;
+    animation-delay: 470ms;
+  }
+
+  i:nth-child(9) {
+    margin-left: -2%;
+    animation-delay: 220ms;
+  }
+
+  i:nth-child(10) {
+    margin-left: 5%;
+    animation-delay: 30ms;
+  }
+
+  i:nth-child(11) {
+    margin-left: 11%;
+    animation-delay: 380ms;
+  }
+
+  i:nth-child(12) {
+    margin-left: 17%;
+    animation-delay: 120ms;
+  }
+
+  i:nth-child(13) {
+    margin-left: 23%;
+    animation-delay: 520ms;
+  }
+
+  i:nth-child(14) {
+    margin-left: 29%;
+    animation-delay: 180ms;
+  }
+
+  i:nth-child(15) {
+    margin-left: 34%;
+    animation-delay: 350ms;
+  }
+
+  i:nth-child(16) {
+    margin-left: 39%;
+    animation-delay: 60ms;
+  }
+
+  i:nth-child(17) {
+    margin-left: 44%;
+    animation-delay: 440ms;
+  }
+
+  i:nth-child(18) {
+    margin-left: 48%;
+    animation-delay: 240ms;
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) rotate(0);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(390px) rotate(620deg);
+  }
+}
+
+@keyframes emblem-arrival {
+  from {
+    opacity: 0;
+    transform: scale(0.55) rotate(-8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes new-level-glow {
+  0%,
+  100% {
+    text-shadow: none;
+    transform: scale(1);
+  }
+
+  50% {
+    text-shadow: 0 0 18px rgba(181, 138, 60, 0.68);
+    transform: scale(1.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+
+  .emblem,
+  .levels .newLevel strong {
+    animation: none;
+  }
+}

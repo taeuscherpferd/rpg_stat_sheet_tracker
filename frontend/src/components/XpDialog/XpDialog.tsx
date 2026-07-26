@@ -1,8 +1,13 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import type { SkillResponse } from '@rlrpg/shared/contracts'
+import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { api } from '@/api'
 import { AppLogic } from '@/components/App/App.logic'
 import { Modal } from '@/components/Modal/Modal'
+import {
+  XpCelebrationLogic,
+  type XpAwardPresentation,
+} from '@/components/XpCelebration/XpCelebration.logic'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { addXp, refreshData } from '@/store'
 import styles from './XpDialog.module.scss'
@@ -10,11 +15,13 @@ import styles from './XpDialog.module.scss'
 interface XpDialogProps {
   skill: SkillResponse
   onClose: () => void
+  onXpAwarded: (presentation: XpAwardPresentation) => void
 }
 
-export const XpDialog = ({ skill, onClose }: XpDialogProps) => {
+export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
   const dispatch = useAppDispatch()
-  const offline = useAppSelector((state) => state.app.connection === 'offline')
+  const { settings, connection } = useAppSelector((state) => state.app)
+  const offline = connection === 'offline'
   const [date, setDate] = useState(AppLogic.today())
   const [xp, setXp] = useState('')
   const [minutes, setMinutes] = useState('')
@@ -41,7 +48,7 @@ export const XpDialog = ({ skill, onClose }: XpDialogProps) => {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    await dispatch(
+    const entry = await dispatch(
       addXp({
         skillId: skill.id,
         date,
@@ -51,8 +58,16 @@ export const XpDialog = ({ skill, onClose }: XpDialogProps) => {
         notes: notes || null,
       }),
     ).unwrap()
-    await dispatch(refreshData())
     onClose()
+    const refreshAction = await dispatch(refreshData())
+    if (refreshData.fulfilled.match(refreshAction)) {
+      onXpAwarded(
+        XpCelebrationLogic.createPresentation(
+          refreshAction.payload.skills,
+          entry.awards,
+        ),
+      )
+    }
   }
 
   return (
@@ -75,7 +90,7 @@ export const XpDialog = ({ skill, onClose }: XpDialogProps) => {
               autoFocus
               type="number"
               min={1}
-              max={1000000}
+              max={settings?.maximumManualXp ?? DEFAULT_MAXIMUM_MANUAL_XP}
               value={xp}
               onChange={(event) => setXp(event.target.value)}
             />

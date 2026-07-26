@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react'
 import type { XpEntryResponse } from '@rlrpg/shared/contracts'
+import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { Modal } from '@/components/Modal/Modal'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { editXp, refreshData } from '@/store'
@@ -15,7 +16,8 @@ export const HistoryEditDialog = ({
   onClose,
 }: HistoryEditDialogProps) => {
   const dispatch = useAppDispatch()
-  const offline = useAppSelector((state) => state.app.connection === 'offline')
+  const { settings, connection } = useAppSelector((state) => state.app)
+  const offline = connection === 'offline'
   const [date, setDate] = useState(entry.date)
   const [xp, setXp] = useState(String(entry.xp))
   const [minutes, setMinutes] = useState(
@@ -57,6 +59,7 @@ export const HistoryEditDialog = ({
               required
               type="number"
               min={1}
+              max={settings?.maximumManualXp ?? DEFAULT_MAXIMUM_MANUAL_XP}
               value={xp}
               onChange={(event) => setXp(event.target.value)}
             />

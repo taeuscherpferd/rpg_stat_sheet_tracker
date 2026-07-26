@@ -1,0 +1,230 @@
+.skill {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--skill-color, var(--forest));
+  border-radius: 4px;
+  background: rgba(255, 248, 230, 0.76);
+  box-shadow: 0 3px 10px rgba(59, 48, 30, 0.09);
+}
+
+.skillAwarded {
+  animation: awarded-skill-glow 900ms ease-out both;
+}
+
+.mainAction {
+  min-width: 0;
+  width: 100%;
+  flex: none;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 14px 14px 6px;
+  text-align: left;
+  border: 0;
+  color: inherit;
+  background: none;
+}
+
+.icon {
+  width: 48px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #ead7aa;
+  font:
+    600 19px 'Cinzel',
+    serif;
+}
+
+.identity {
+  display: grid;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    font-size: 17px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    color: var(--ink-soft);
+    letter-spacing: 0;
+  }
+}
+
+.level {
+  align-self: start;
+  text-align: right;
+  color: var(--ink-soft);
+  font-size: 12px;
+
+  strong {
+    display: block;
+    color: var(--rust);
+    font:
+      600 19px 'Cinzel',
+      serif;
+  }
+}
+
+.progress {
+  grid-column: 1 / -1;
+  align-self: end;
+  position: relative;
+  display: grid;
+}
+
+.track {
+  width: 100%;
+  height: 9px;
+  overflow: hidden;
+  display: block;
+  border: 1px solid rgba(40, 61, 51, 0.34);
+  border-radius: 8px;
+  background: #d9cba8;
+}
+
+.progressFill {
+  width: var(--skill-progress);
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03),
+      rgba(255, 255, 255, 0.32)
+    ),
+    var(--skill-color, var(--forest-light));
+}
+
+.progressAnimating .progressFill {
+  transition: width var(--skill-progress-duration)
+    cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.xpGain {
+  position: absolute;
+  right: 5px;
+  bottom: 13px;
+  padding: 2px 7px;
+  border: 1px solid rgba(181, 138, 60, 0.46);
+  border-radius: 10px;
+  color: #704b13;
+  background: #fff0bd;
+  box-shadow: 0 2px 8px rgba(80, 55, 24, 0.17);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: xp-gain-arrival 500ms ease-out both;
+}
+
+.tags {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+
+  small {
+    padding: 2px 7px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ink-soft);
+    background: rgba(234, 215, 170, 0.55);
+    font-size: 11px;
+    line-height: 1.2;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 10px 10px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+
+  button {
+    padding: 7px;
+    border: 0;
+    color: var(--ink-soft);
+    background: none;
+  }
+
+  button:hover {
+    color: var(--rust);
+  }
+}
+
+.xpCount {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes awarded-skill-glow {
+  0% {
+    box-shadow: 0 3px 10px rgba(59, 48, 30, 0.09);
+  }
+
+  45% {
+    box-shadow:
+      0 0 0 3px rgba(181, 138, 60, 0.3),
+      0 7px 20px rgba(80, 55, 24, 0.2);
+  }
+
+  100% {
+    box-shadow: 0 3px 10px rgba(59, 48, 30, 0.09);
+  }
+}
+
+@keyframes xp-gain-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.85);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skillAwarded,
+  .xpGain {
+    animation: none;
+  }
+
+  .progressAnimating .progressFill {
+    transition: none;
+  }
+}
+
+@media (max-width: 440px) {
+  .mainAction {
+    padding: 15px 13px 12px;
+  }
+
+  .identity strong {
+    font-size: 16px;
+  }
+}

@@ -42,7 +42,7 @@ export class AppDataSync {
   static async saveSnapshot(data: RemoteAppData): Promise<string> {
     const savedAt = new Date().toISOString()
     const snapshot: AppSnapshot = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       savedAt,
       user: data.user,
       skills: data.skills,
