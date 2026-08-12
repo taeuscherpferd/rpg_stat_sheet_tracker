@@ -15,6 +15,7 @@ import {
   XpCelebrationLogic,
   type XpAwardPresentation,
 } from '@/components/XpCelebration/XpCelebration.logic'
+import { XpAwardModal } from '@/components/XpAwardModal/XpAwardModal'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { completeFocus, refreshData } from '@/store'
 import { FocusedPracticeLogic, type TimerState } from './FocusedPractice.logic'
@@ -26,11 +27,7 @@ interface PracticeRoll {
   value: string
 }
 
-interface FocusedPracticeProps {
-  onXpAwarded: (presentation: XpAwardPresentation) => void
-}
-
-export const FocusedPractice = ({ onXpAwarded }: FocusedPracticeProps) => {
+export const FocusedPractice = () => {
   const dispatch = useAppDispatch()
   const { user, skills, settings, connection } = useAppSelector(
     (state) => state.app,
@@ -54,6 +51,7 @@ export const FocusedPractice = ({ onXpAwarded }: FocusedPracticeProps) => {
   const [completing, setCompleting] = useState(false)
   const [rolls, setRolls] = useState<PracticeRoll[]>([])
   const [notes, setNotes] = useState('')
+  const [xpAward, setXpAward] = useState<XpAwardPresentation | null>(null)
   const resumeOnCompletionCancelRef = useRef(false)
   const { play: playCompletionSound, prepare: prepareCompletionSound } =
     useFocusCompletionSound()
@@ -180,7 +178,7 @@ export const FocusedPractice = ({ onXpAwarded }: FocusedPracticeProps) => {
     resetSessionState()
     const refreshAction = await dispatch(refreshData())
     if (refreshData.fulfilled.match(refreshAction)) {
-      onXpAwarded(
+      setXpAward(
         XpCelebrationLogic.createPresentation(
           refreshAction.payload.skills,
           entry.awards,
@@ -380,6 +378,13 @@ export const FocusedPractice = ({ onXpAwarded }: FocusedPracticeProps) => {
             </footer>
           </div>
         </Modal>
+      )}
+      {xpAward !== null && (
+        <XpAwardModal
+          presentation={xpAward}
+          skills={skills}
+          onClose={() => setXpAward(null)}
+        />
       )}
     </section>
   )

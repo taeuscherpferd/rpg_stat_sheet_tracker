@@ -1,7 +1,7 @@
 import { LevelUpCelebration } from '@/components/LevelUpCelebration/LevelUpCelebration'
 import { SkillCard } from '@/components/SkillCard/SkillCard'
 import { SkillDialog } from '@/components/SkillDialog/SkillDialog'
-import { useXpAwardAnimation } from '@/components/SkillSheet/hooks/useXpAwardAnimation'
+import { useXpAwardAnimation } from '@/components/XpCelebration/hooks/useXpAwardAnimation'
 import {
   SkillSheetLogic,
   type SkillSort,

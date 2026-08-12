@@ -18,16 +18,16 @@ interface SkillCardProps {
   skill: SkillResponse
   animatedProgress?: XpProgressStage
   awardedXp?: SkillXpAwardPresentation
-  offline: boolean
-  onEdit: (skill: SkillResponse) => void
-  onLogXp: (skill: SkillResponse) => void
+  offline?: boolean
+  onEdit?: (skill: SkillResponse) => void
+  onLogXp?: (skill: SkillResponse) => void
 }
 
 export const SkillCard = ({
   skill,
   animatedProgress,
   awardedXp,
-  offline,
+  offline = false,
   onEdit,
   onLogXp,
 }: SkillCardProps) => {
@@ -39,6 +39,46 @@ export const SkillCard = ({
   const progressPercent =
     animatedProgress?.fillPercent ??
     SkillCardLogic.progressPercent(displayedProgress)
+  const content = (
+    <>
+      <span className={styles.icon}>
+        {skill.emoji ?? skill.code.slice(0, 1)}
+      </span>
+      <span className={styles.identity}>
+        <strong>{skill.name}</strong>
+        <small>{skill.code}</small>
+      </span>
+      <span className={styles.level}>
+        Level <strong>{displayedProgress.level}</strong>
+      </span>
+      <span
+        className={`${styles.progress} ${animatedProgress?.animate === true ? styles.progressAnimating : ''}`}
+      >
+        <span
+          className={styles.track}
+          role="progressbar"
+          aria-label={`${skill.name} level progress`}
+          aria-valuemin={0}
+          aria-valuemax={displayedProgress.nextLevelXp}
+          aria-valuenow={displayedProgress.levelXp}
+        >
+          <span className={styles.progressFill} />
+        </span>
+        {awardedXp !== undefined && (
+          <small className={styles.xpGain}>
+            +{awardedXp.amount.toLocaleString()} XP
+          </small>
+        )}
+      </span>
+      {skill.tags.length > 0 && (
+        <span className={styles.tags}>
+          {skill.tags.map((tag) => (
+            <small key={tag}>{tag}</small>
+          ))}
+        </span>
+      )}
+    </>
+  )
 
   return (
     <article
@@ -51,58 +91,29 @@ export const SkillCard = ({
         } as SkillCardStyle
       }
     >
-      <button
-        className={styles.mainAction}
-        type="button"
-        disabled={offline}
-        onClick={() => onLogXp(skill)}
-      >
-        <span className={styles.icon}>
-          {skill.emoji ?? skill.code.slice(0, 1)}
-        </span>
-        <span className={styles.identity}>
-          <strong>{skill.name}</strong>
-          <small>{skill.code}</small>
-        </span>
-        <span className={styles.level}>
-          Level <strong>{displayedProgress.level}</strong>
-        </span>
-        <span
-          className={`${styles.progress} ${animatedProgress?.animate === true ? styles.progressAnimating : ''}`}
-        >
-          <span
-            className={styles.track}
-            role="progressbar"
-            aria-label={`${skill.name} level progress`}
-            aria-valuemin={0}
-            aria-valuemax={displayedProgress.nextLevelXp}
-            aria-valuenow={displayedProgress.levelXp}
-          >
-            <span className={styles.progressFill} />
-          </span>
-          {awardedXp !== undefined && (
-            <small className={styles.xpGain}>
-              +{awardedXp.amount.toLocaleString()} XP
-            </small>
-          )}
-        </span>
-        {skill.tags.length > 0 && (
-          <span className={styles.tags}>
-            {skill.tags.map((tag) => (
-              <small key={tag}>{tag}</small>
-            ))}
-          </span>
-        )}
-      </button>
-      <div className={styles.actions}>
+      {onLogXp === undefined ? (
+        <div className={styles.mainAction}>{content}</div>
+      ) : (
         <button
+          className={styles.mainAction}
           type="button"
-          title="Edit skill"
           disabled={offline}
-          onClick={() => onEdit(skill)}
+          onClick={() => onLogXp(skill)}
         >
-          <Pencil size={17} />
+          {content}
         </button>
+      )}
+      <div className={styles.actions}>
+        {onEdit !== undefined && (
+          <button
+            type="button"
+            title="Edit skill"
+            disabled={offline}
+            onClick={() => onEdit(skill)}
+          >
+            <Pencil size={17} />
+          </button>
+        )}
         {skill.links.length > 0 && (
           <span title={SkillCardLogic.linksTitle(skill.links)}>
             <Link2 size={16} /> {skill.links.length}

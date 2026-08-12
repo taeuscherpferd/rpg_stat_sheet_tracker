@@ -124,12 +124,12 @@ describe('XpCelebrationLogic', () => {
         levelXp: 300,
         nextLevelXp: 700,
         animate: true,
-        atMs: 50,
+        atMs: 250,
         fillPercent: (300 / 700) * 100,
-        transitionMs: 700,
+        transitionMs: 1600,
       },
     ])
-    expect(XpCelebrationLogic.animationDuration(award)).toBe(750)
+    expect(XpCelebrationLogic.animationDuration(award)).toBe(1850)
   })
 
   it('fills and resets the bar for every crossed level', () => {
@@ -153,16 +153,16 @@ describe('XpCelebrationLogic', () => {
         levelXp: 700,
         nextLevelXp: 700,
         animate: true,
-        atMs: 50,
+        atMs: 250,
         fillPercent: 100,
-        transitionMs: 700,
+        transitionMs: 1600,
       },
       {
         level: 3,
         levelXp: 0,
         nextLevelXp: 1500,
         animate: false,
-        atMs: 750,
+        atMs: 1850,
         fillPercent: 0,
         transitionMs: 0,
       },
@@ -171,16 +171,16 @@ describe('XpCelebrationLogic', () => {
         levelXp: 1500,
         nextLevelXp: 1500,
         animate: true,
-        atMs: 800,
+        atMs: 2100,
         fillPercent: 100,
-        transitionMs: 700,
+        transitionMs: 1600,
       },
       {
         level: 4,
         levelXp: 0,
         nextLevelXp: 2500,
         animate: false,
-        atMs: 1500,
+        atMs: 3700,
         fillPercent: 0,
         transitionMs: 0,
       },
@@ -189,9 +189,9 @@ describe('XpCelebrationLogic', () => {
         levelXp: 25,
         nextLevelXp: 2500,
         animate: true,
-        atMs: 1550,
+        atMs: 3950,
         fillPercent: 1,
-        transitionMs: 700,
+        transitionMs: 1600,
       },
     ])
     expect(XpCelebrationLogic.levelUps({ awards: [award] })).toEqual([award])

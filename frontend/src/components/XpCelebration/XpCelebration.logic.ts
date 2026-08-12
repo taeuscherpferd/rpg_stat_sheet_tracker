@@ -33,9 +33,9 @@ export interface XpProgressStage extends XpProgressSnapshot {
 }
 
 export class XpCelebrationLogic {
-  static readonly progressTransitionMs = 700
-  static readonly progressResetDelayMs = 50
-  static readonly maximumTimelineMs = 12_000
+  static readonly progressTransitionMs = 1_600
+  static readonly progressResetDelayMs = 250
+  static readonly maximumTimelineMs = 24_000
 
   static createPresentation(
     currentSkills: SkillResponse[],

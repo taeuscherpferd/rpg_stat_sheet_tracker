@@ -33,7 +33,6 @@ export const App = () => {
         userId,
         awards: presentation.awards,
       })
-      setPage('skills')
     },
     [userId],
   )
@@ -112,7 +111,7 @@ export const App = () => {
             onXpAwarded={presentXpAward}
           />
         )}
-        {page === 'focus' && <FocusedPractice onXpAwarded={presentXpAward} />}
+        {page === 'focus' && <FocusedPractice />}
         {page === 'settings' && <Settings />}
       </main>
     </div>
