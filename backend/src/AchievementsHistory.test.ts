@@ -111,16 +111,13 @@ it('logs and undoes achievements with no XP reward', async () => {
 it('allows reader keys to query all sources with complete totals, dates and pagination', async () => {
   const { app, auth, skillId, reader } = await setup()
   for (const date of ['2026-10-04', '2026-10-05', '2026-10-05']) {
-    await request(app)
-      .post('/api/xp-entries')
-      .set(auth)
-      .send({
-        skillId,
-        date,
-        xp: 100,
-        activity: 'Target practice',
-        minutes: 15,
-      })
+    await request(app).post('/api/xp-entries').set(auth).send({
+      skillId,
+      date,
+      xp: 100,
+      activity: 'Target practice',
+      minutes: 15,
+    })
   }
   const achievement = await request(app)
     .post(`/api/skills/${skillId}/achievements`)
