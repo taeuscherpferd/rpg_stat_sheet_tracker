@@ -8,6 +8,7 @@ import {
   type PayloadAction,
 } from '@reduxjs/toolkit'
 import type {
+  AchievementResponse,
   ApiKeyResponse,
   FocusSettings,
   SkillResponse,
@@ -34,6 +35,7 @@ interface ApiKeyCreated {
 }
 
 interface AppState {
+  achievements: AchievementResponse[]
   user: UserResponse | null
   skills: SkillResponse[]
   entries: XpEntryResponse[]
@@ -48,6 +50,7 @@ interface AppState {
 }
 
 const initialState: AppState = {
+  achievements: [],
   user: null,
   skills: [],
   entries: [],

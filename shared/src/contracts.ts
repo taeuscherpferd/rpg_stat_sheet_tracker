@@ -137,7 +137,7 @@ export interface XpEntryResponse {
   minutes: number | null
   activity: string | null
   notes: string | null
-  source: 'manual' | 'focus' | 'automation'
+  source: 'manual' | 'focus' | 'automation' | 'achievement'
   origin: string | null
   createdAt: string
   awards: XpAwardResponse[]
@@ -154,3 +154,50 @@ export interface ApiKeyResponse {
   createdAt: string
   lastUsedAt: string | null
 }
+
+export const achievementInputSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  description: z.string().trim().max(4000).default(''),
+  icon: z
+    .string()
+    .trim()
+    .max(200000)
+    .default('🏆')
+    .refine(
+      (value) =>
+        value.length <= 16 ||
+        /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(value),
+      { message: 'Use an emoji or a PNG, JPEG, WebP, or GIF image' },
+    ),
+  xp: z.number().int().min(0).max(MAXIMUM_MANUAL_XP).default(0),
+  bonusAward: z.string().trim().max(1000).default(''),
+})
+export const achievementStateSchema = z.object({
+  obtained: z.boolean(),
+  date: dateSchema.optional(),
+})
+export interface AchievementResponse {
+  id: string
+  skillId: string
+  name: string
+  description: string
+  icon: string
+  xp: number
+  bonusAward: string
+  earnedEntryId: string | null
+  obtainedAt: string | null
+}
+export const historyQuerySchema = z
+  .object({
+    skillId: z.string().uuid().optional(),
+    skillCode: skillCodeSchema.optional(),
+    from: dateSchema.optional(),
+    to: dateSchema.optional(),
+    activity: z.string().trim().max(120).optional(),
+    source: z.enum(['manual', 'focus', 'automation', 'achievement']).optional(),
+    limit: z.coerce.number().int().min(1).max(500).default(100),
+    offset: z.coerce.number().int().min(0).default(0),
+  })
+  .refine((value) => !value.from || !value.to || value.from <= value.to, {
+    message: 'from must precede to',
+  })

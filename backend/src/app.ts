@@ -12,6 +12,9 @@ import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import swaggerUi from 'swagger-ui-express'
 import {
+  achievementInputSchema,
+  achievementStateSchema,
+  historyQuerySchema,
   apiKeySchema,
   automationEntrySchema,
   entryUpdateSchema,
@@ -338,6 +341,55 @@ export const createApp = (
     },
   )
 
+  app.get('/api/achievements', requireSession, (_request, response) => {
+    response.json(database.listAchievements(userId(response)))
+  })
+  app.post(
+    '/api/skills/:skillId/achievements',
+    requireSession,
+    (request, response) => {
+      const id = ledger.saveAchievement(
+        userId(response),
+        routeParam(request, 'skillId'),
+        achievementInputSchema.parse(request.body),
+      )
+      response
+        .status(201)
+        .json(
+          database.listAchievements(userId(response)).find((a) => a.id === id),
+        )
+    },
+  )
+  app.put(
+    '/api/skills/:skillId/achievements/:achievementId',
+    requireSession,
+    (request, response) => {
+      const id = ledger.saveAchievement(
+        userId(response),
+        routeParam(request, 'skillId'),
+        achievementInputSchema.parse(request.body),
+        routeParam(request, 'achievementId'),
+      )
+      response.json(
+        database.listAchievements(userId(response)).find((a) => a.id === id),
+      )
+    },
+  )
+  app.put(
+    '/api/achievements/:achievementId/obtained',
+    requireSession,
+    (request, response) => {
+      const input = achievementStateSchema.parse(request.body)
+      ledger.setAchievementObtained(
+        userId(response),
+        routeParam(request, 'achievementId'),
+        input.obtained,
+        input.date ?? localDate(String(response.locals.timezone)),
+      )
+      response.status(204).send()
+    },
+  )
+
   app.get('/api/xp-entries', requireSession, (request, response) => {
     const skillId =
       typeof request.query.skillId === 'string'
@@ -581,6 +633,63 @@ export const createApp = (
       throw new DomainError('Skill not found', 404, 'SKILL_NOT_FOUND')
     response.json(skill)
   })
+  automation.get('/xp-entries', (request, response) => {
+    const query = historyQuerySchema.parse(request.query)
+    const owner = apiIdentity(response).user_id
+    let skillId = query.skillId
+    if (query.skillCode) {
+      const skill = database
+        .listSkills(owner)
+        .find((s) => s.code === query.skillCode)
+      if (!skill || (skillId && skillId !== skill.id))
+        throw new DomainError('Skill not found', 404, 'SKILL_NOT_FOUND')
+      skillId = skill.id
+    }
+    if (skillId && !database.listSkills(owner).some((s) => s.id === skillId))
+      throw new DomainError('Skill not found', 404, 'SKILL_NOT_FOUND')
+    const matches = database
+      .listEntries(owner, skillId)
+      .filter(
+        (e) =>
+          (!query.from || e.date >= query.from) &&
+          (!query.to || e.date <= query.to) &&
+          (!query.source || e.source === query.source) &&
+          (!query.activity ||
+            (e.activity ?? '')
+              .toLocaleLowerCase()
+              .includes(query.activity.toLocaleLowerCase())),
+      )
+    const amount = (e: (typeof matches)[number]) =>
+      skillId
+        ? e.awards
+            .filter((a) => a.skillId === skillId)
+            .reduce((sum, a) => sum + a.amount, 0)
+        : e.xp
+    response.json({
+      entries: matches.slice(query.offset, query.offset + query.limit),
+      total: matches.length,
+      totalXp: matches.reduce((sum, e) => sum + amount(e), 0),
+      totalMinutes: matches
+        .filter((e) => !skillId || e.skillId === skillId)
+        .reduce((sum, e) => sum + (e.minutes ?? 0), 0),
+      latestPracticeDate:
+        matches.find(
+          (e) =>
+            e.source !== 'achievement' && (!skillId || e.skillId === skillId),
+        )?.date ?? null,
+      limit: query.limit,
+      offset: query.offset,
+      nextOffset:
+        query.offset + query.limit < matches.length
+          ? query.offset + query.limit
+          : null,
+      timezone: (
+        database.connection
+          .prepare('SELECT timezone FROM users WHERE id = ?')
+          .get(owner) as { timezone: string }
+      ).timezone,
+    })
+  })
   automation.post('/xp-entries', (request, response) => {
     const identity = apiIdentity(response)
     if (identity.preset !== 'writer')
@@ -651,12 +760,7 @@ export const createApp = (
     const identity = apiIdentity(response)
     const entry = database
       .listEntries(identity.user_id)
-      .find(
-        (candidate) =>
-          candidate.id === request.params.entryId &&
-          candidate.source === 'automation' &&
-          candidate.origin === identity.name,
-      )
+      .find((candidate) => candidate.id === request.params.entryId)
     if (entry === undefined)
       throw new DomainError('Entry not found', 404, 'ENTRY_NOT_FOUND')
     response.json(entry)

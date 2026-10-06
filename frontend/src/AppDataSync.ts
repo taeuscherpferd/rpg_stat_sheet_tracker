@@ -1,4 +1,5 @@
 import type {
+  AchievementResponse,
   ApiKeyResponse,
   FocusSettings,
   SkillResponse,
@@ -9,6 +10,7 @@ import { api } from '@/api'
 import { AppSnapshotStore, type AppSnapshot } from '@/AppSnapshotStore'
 
 export interface RemoteAppData {
+  achievements?: AchievementResponse[]
   user: UserResponse
   skills: SkillResponse[]
   entries: XpEntryResponse[]
@@ -23,14 +25,17 @@ export interface InitializedAppData extends RemoteAppData {
 
 export class AppDataSync {
   static async loadRemote(): Promise<RemoteAppData> {
-    const [user, skills, entries, settings, apiKeys] = await Promise.all([
-      api.get<UserResponse>('/auth/me'),
-      api.get<SkillResponse[]>('/skills'),
-      api.get<XpEntryResponse[]>('/xp-entries'),
-      api.get<FocusSettings>('/settings'),
-      api.get<ApiKeyResponse[]>('/api-keys'),
-    ])
+    const [user, skills, entries, settings, apiKeys, achievements] =
+      await Promise.all([
+        api.get<UserResponse>('/auth/me'),
+        api.get<SkillResponse[]>('/skills'),
+        api.get<XpEntryResponse[]>('/xp-entries'),
+        api.get<FocusSettings>('/settings'),
+        api.get<ApiKeyResponse[]>('/api-keys'),
+        api.get<AchievementResponse[]>('/achievements'),
+      ])
     return {
+      achievements: achievements.data,
       user: user.data,
       skills: skills.data,
       entries: entries.data,
@@ -44,6 +49,7 @@ export class AppDataSync {
     const snapshot: AppSnapshot = {
       schemaVersion: 2,
       savedAt,
+      achievements: data.achievements ?? [],
       user: data.user,
       skills: data.skills,
       entries: data.entries,
@@ -61,6 +67,7 @@ export class AppDataSync {
     const snapshot = await AppSnapshotStore.load()
     if (snapshot === null) return null
     return {
+      achievements: snapshot.achievements ?? [],
       user: snapshot.user,
       skills: snapshot.skills,
       entries: snapshot.entries,

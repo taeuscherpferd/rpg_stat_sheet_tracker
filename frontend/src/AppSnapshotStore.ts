@@ -1,4 +1,5 @@
 import type {
+  AchievementResponse,
   FocusSettings,
   SkillResponse,
   UserResponse,
@@ -12,6 +13,7 @@ const snapshotKey = 'current-user'
 const storeName = 'snapshots'
 
 export interface AppSnapshot {
+  achievements?: AchievementResponse[]
   schemaVersion: 2
   savedAt: string
   user: UserResponse

@@ -3,7 +3,7 @@ import {
   type XpProgressStage,
 } from '@/components/XpCelebration/XpCelebration.logic'
 import type { SkillResponse } from '@rlrpg/shared/contracts'
-import { Link2, Pencil } from 'lucide-react'
+import { Link2, Pencil, Plus } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { SkillCardLogic } from './SkillCard.logic'
 import styles from './SkillCard.module.scss'
@@ -19,6 +19,7 @@ interface SkillCardProps {
   animatedProgress?: XpProgressStage
   awardedXp?: SkillXpAwardPresentation
   offline?: boolean
+  onDetails?: (skill: SkillResponse) => void
   onEdit?: (skill: SkillResponse) => void
   onLogXp?: (skill: SkillResponse) => void
 }
@@ -28,6 +29,7 @@ export const SkillCard = ({
   animatedProgress,
   awardedXp,
   offline = false,
+  onDetails,
   onEdit,
   onLogXp,
 }: SkillCardProps) => {
@@ -91,14 +93,13 @@ export const SkillCard = ({
         } as SkillCardStyle
       }
     >
-      {onLogXp === undefined ? (
+      {onDetails === undefined ? (
         <div className={styles.mainAction}>{content}</div>
       ) : (
         <button
           className={styles.mainAction}
           type="button"
-          disabled={offline}
-          onClick={() => onLogXp(skill)}
+          onClick={() => onDetails(skill)}
         >
           {content}
         </button>
@@ -112,6 +113,16 @@ export const SkillCard = ({
             onClick={() => onEdit(skill)}
           >
             <Pencil size={17} />
+          </button>
+        )}
+        {onLogXp !== undefined && (
+          <button
+            type="button"
+            title={`Add XP to ${skill.name}`}
+            disabled={offline}
+            onClick={() => onLogXp(skill)}
+          >
+            <Plus size={17} />
           </button>
         )}
         {skill.links.length > 0 && (

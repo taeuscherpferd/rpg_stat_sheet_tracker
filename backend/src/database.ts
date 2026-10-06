@@ -1,5 +1,6 @@
 import { DatabaseSync, type SQLOutputValue } from 'node:sqlite'
 import type {
+  AchievementResponse,
   ApiKeyResponse,
   FocusSettings,
   SkillResponse,
@@ -39,6 +40,7 @@ interface EntryRow {
   source: 'manual' | 'focus' | 'automation'
   origin: string | null
   created_at: string
+  achievement_id: string | null
 }
 
 interface AwardRow {
@@ -152,6 +154,23 @@ export class AppDatabase {
       CREATE INDEX IF NOT EXISTS idx_entries_user_date ON xp_entries(user_id, date DESC);
       CREATE INDEX IF NOT EXISTS idx_awards_skill ON xp_awards(skill_id);
     `)
+    this.connection.exec(`
+      CREATE TABLE IF NOT EXISTS achievements (
+        id TEXT PRIMARY KEY, skill_id TEXT NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+        name TEXT NOT NULL, description TEXT NOT NULL, icon TEXT NOT NULL,
+        xp INTEGER NOT NULL, bonus_award TEXT NOT NULL,
+        earned_entry_id TEXT REFERENCES xp_entries(id) ON DELETE SET NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_achievements_skill ON achievements(skill_id);
+    `)
+    const entryColumns = this.connection
+      .prepare('PRAGMA table_info(xp_entries)')
+      .all() as SqlRow<TableInfoRow>[]
+    if (!entryColumns.some((column) => column.name === 'achievement_id')) {
+      this.connection.exec(
+        'ALTER TABLE xp_entries ADD COLUMN achievement_id TEXT',
+      )
+    }
     const skillColumns = this.connection
       .prepare('PRAGMA table_info(skills)')
       .all() as SqlRow<TableInfoRow>[]
@@ -237,13 +256,16 @@ export class AppDatabase {
   }
 
   listEntries(userId: string, skillId?: string): XpEntryResponse[] {
-    const filter = skillId === undefined ? '' : 'AND e.skill_id = ?'
+    const filter =
+      skillId === undefined
+        ? ''
+        : 'AND EXISTS (SELECT 1 FROM xp_awards a WHERE a.entry_id = e.id AND a.skill_id = ?)'
     const params = skillId === undefined ? [userId] : [userId, skillId]
     const entries = this.connection
       .prepare(
         `
       SELECT e.*, s.name AS skill_name FROM xp_entries e JOIN skills s ON s.id = e.skill_id
-      WHERE e.user_id = ? ${filter} ORDER BY e.date DESC, e.created_at DESC LIMIT 500
+      WHERE e.user_id = ? ${filter} ORDER BY e.date DESC, e.created_at DESC, e.id DESC
     `,
       )
       .all(...params) as SqlRow<EntryRow>[]
@@ -275,7 +297,7 @@ export class AppDatabase {
       minutes: entry.minutes,
       activity: entry.activity,
       notes: entry.notes,
-      source: entry.source,
+      source: entry.achievement_id === null ? entry.source : 'achievement',
       origin: entry.origin,
       createdAt: entry.created_at,
       awards: awards
@@ -291,6 +313,23 @@ export class AppDatabase {
         .filter((roll) => roll.entry_id === entry.id)
         .map((roll) => roll.roll),
     }))
+  }
+
+  listAchievements(userId: string, skillId?: string): AchievementResponse[] {
+    return this.connection
+      .prepare(
+        `
+      SELECT a.id, a.skill_id AS skillId, a.name, a.description, a.icon, a.xp,
+        a.bonus_award AS bonusAward, a.earned_entry_id AS earnedEntryId, e.date AS obtainedAt
+      FROM achievements a JOIN skills s ON s.id = a.skill_id
+      LEFT JOIN xp_entries e ON e.id = a.earned_entry_id
+      WHERE s.user_id = ? ${skillId ? 'AND s.id = ?' : ''}
+      ORDER BY a.name COLLATE NOCASE, a.id
+    `,
+      )
+      .all(
+        ...(skillId ? [userId, skillId] : [userId]),
+      ) as SqlRow<AchievementResponse>[]
   }
 
   getSettings(userId: string): FocusSettings {

@@ -3,6 +3,7 @@ import type { SQLOutputValue, StatementResultingChanges } from 'node:sqlite'
 import type { FocusSettings, XpEntryResponse } from '@rlrpg/shared/contracts'
 import type { z } from 'zod'
 import {
+  achievementInputSchema,
   entryUpdateSchema,
   focusSessionSchema,
   skillInputSchema,
@@ -40,6 +41,88 @@ export class DomainError extends Error {
 
 export class LedgerService {
   constructor(private readonly database: AppDatabase) {}
+
+  saveAchievement(
+    userId: string,
+    skillId: string,
+    input: z.infer<typeof achievementInputSchema>,
+    id?: string,
+  ): string {
+    this.requireSkill(userId, skillId, true)
+    const achievement = id
+      ? this.database.listAchievements(userId, skillId).find((a) => a.id === id)
+      : undefined
+    if (id && !achievement) throw new DomainError('Achievement not found', 404)
+    if (achievement?.earnedEntryId)
+      throw new DomainError(
+        'Undo this achievement before editing its reward',
+        409,
+      )
+    const achievementId = id ?? randomUUID()
+    this.database.connection
+      .prepare(
+        `
+      INSERT INTO achievements (id, skill_id, name, description, icon, xp, bonus_award)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET name=excluded.name, description=excluded.description,
+        icon=excluded.icon, xp=excluded.xp, bonus_award=excluded.bonus_award
+    `,
+      )
+      .run(
+        achievementId,
+        skillId,
+        input.name,
+        input.description,
+        input.icon,
+        input.xp,
+        input.bonusAward,
+      )
+    return achievementId
+  }
+
+  setAchievementObtained(
+    userId: string,
+    id: string,
+    obtained: boolean,
+    date: string,
+  ): void {
+    this.database.transaction(() => {
+      const achievement = this.database
+        .listAchievements(userId)
+        .find((a) => a.id === id)
+      if (!achievement) throw new DomainError('Achievement not found', 404)
+      if (!obtained) {
+        if (achievement.earnedEntryId)
+          this.deleteEntry(userId, achievement.earnedEntryId)
+        return
+      }
+      if (achievement.earnedEntryId) return
+      this.requireSkill(userId, achievement.skillId, false)
+      const entryId = randomUUID()
+      this.insertEntry(
+        entryId,
+        userId,
+        {
+          skillId: achievement.skillId,
+          date,
+          xp: achievement.xp,
+          activity: `Achievement: ${achievement.name}`,
+          notes: [achievement.description, achievement.bonusAward]
+            .filter(Boolean)
+            .join('\n'),
+        },
+        'manual',
+        null,
+      )
+      this.database.connection
+        .prepare('UPDATE xp_entries SET achievement_id = ? WHERE id = ?')
+        .run(id, entryId)
+      this.insertAwards(entryId, achievement.skillId, achievement.xp)
+      this.database.connection
+        .prepare('UPDATE achievements SET earned_entry_id = ? WHERE id = ?')
+        .run(entryId, id)
+    })
+  }
 
   createSkill(userId: string, input: SkillInput): string {
     const id = randomUUID()
@@ -85,9 +168,9 @@ export class LedgerService {
     input: EntryUpdate,
   ): XpEntryResponse {
     const entry = this.requireEntry(userId, entryId)
-    if (entry.source === 'focus') {
+    if (entry.source === 'focus' || entry.source === 'achievement') {
       throw new DomainError(
-        'Focused Practice entries cannot be edited',
+        'Practice and achievement entries cannot be edited; undo them instead',
         409,
         'ENTRY_LOCKED',
       )

@@ -192,3 +192,17 @@ SQLite migrations run automatically at startup. XP totals and levels are derived
 The application is designed for trusted self-hosted use. Keep the database file and API keys private and terminate TLS at a reverse proxy when exposing it beyond localhost.
 
 Account usernames can be changed under Settings → Account. Usernames must be between 3 and 40 characters and remain unique regardless of letter casing.
+
+### Achievements and skill history
+
+Click a skill tile to open its Achievements and History tabs. Use the plus button beside the tile's edit button to log XP. Create achievements with an emoji or uploaded image, description, XP reward, and optional bonus award text. Unearned achievements appear faded. Marking an achievement obtained creates a ledger entry and awards XP using the skill's current links. Undoing it, or deleting that ledger entry, removes all its XP awards and returns the achievement to unearned. Obtained achievements must be undone before their rewards can be edited. Bonus award text describes a reward; it does not add extra XP.
+
+Reader and writer automation keys can query all of their user's history:
+
+```http
+GET /api/v1/automation/xp-entries?skillCode=MRK&from=2026-10-05&to=2026-10-05
+GET /api/v1/automation/xp-entries?skillCode=TOP&limit=1
+GET /api/v1/automation/xp-entries?activity=throwing&limit=1
+```
+
+The response includes `entries`, `total`, `totalXp`, `totalMinutes`, `latestPracticeDate`, `timezone`, and pagination fields `limit`, `offset`, and `nextOffset`. Totals cover all matches, including pages not returned. Date bounds are inclusive. With a skill filter, XP includes direct and linked awards to that skill; minutes and latest practice date count entries logged directly for that skill. Achievement rewards are excluded from latest practice date. Results include archived skills. Optional filters: `skillId`, `skillCode`, `from`, `to`, `activity` (case insensitive substring), and `source`. Follow `nextOffset` until null to read all results. `GET /api/v1/automation/xp-entries/:entryId` also reads entries from every source owned by the user. See `/api/docs` for the full API contract.

@@ -1,3 +1,4 @@
+import { SkillDetails } from '@/components/SkillDetails/SkillDetails'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration/LevelUpCelebration'
 import { SkillCard } from '@/components/SkillCard/SkillCard'
 import { SkillDialog } from '@/components/SkillDialog/SkillDialog'
@@ -38,6 +39,8 @@ export const SkillSheet = ({
   const [filter, setFilter] = useState('')
   const [sort, setSort] = useState<SkillSort>('name')
   const [editing, setEditing] = useState<SkillResponse | null | 'new'>(null)
+  const [detailsId, setDetailsId] = useState<string | null>(null)
+  const detailsSkill = skills.find((skill) => skill.id === detailsId)
   const [logging, setLogging] = useState<SkillResponse | null>(null)
   const visibleSkills = SkillSheetLogic.filterAndSort(active, filter, sort)
   const { progressBySkillId, readyForCelebration } =
@@ -131,6 +134,7 @@ export const SkillSheet = ({
                 animatedProgress={animatedProgress}
                 awardedXp={awardedXp}
                 offline={offline}
+                onDetails={(skill) => setDetailsId(skill.id)}
                 onEdit={setEditing}
                 onLogXp={setLogging}
               />
@@ -171,6 +175,9 @@ export const SkillSheet = ({
                 }
           }
         />
+      )}
+      {detailsSkill && (
+        <SkillDetails skill={detailsSkill} onClose={() => setDetailsId(null)} />
       )}
       {logging !== null && (
         <XpDialog
