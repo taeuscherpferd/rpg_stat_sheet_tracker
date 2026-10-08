@@ -187,6 +187,64 @@ it('allows reader keys to query all sources with complete totals, dates and pagi
   ).toBe(400)
 })
 
+it('exports complete earned and unearned achievements, including archived skills', async () => {
+  const { app, auth, skillId } = await setup()
+  const icon = 'data:image/png;base64,aGVsbG8='
+  const earned = await request(app)
+    .post(`/api/skills/${skillId}/achievements`)
+    .set(auth)
+    .send({
+      name: 'A bullseye',
+      description: 'Hit the "center", twice\nKeep practicing',
+      icon,
+      xp: 100,
+      bonusAward: 'Arrows, gold',
+    })
+  expect(earned.status).toBe(201)
+  await request(app)
+    .put(`/api/achievements/${earned.body.id}/obtained`)
+    .set(auth)
+    .send({ obtained: true, date: '2026-10-05' })
+  const unearned = await request(app)
+    .post(`/api/skills/${skillId}/achievements`)
+    .set(auth)
+    .send({ name: 'Z future milestone', xp: 0 })
+  expect(unearned.status).toBe(201)
+  const archived = await request(app)
+    .post(`/api/skills/${skillId}/archive`)
+    .set(auth)
+    .send({ archived: true })
+  expect(archived.status).toBe(204)
+  const history = await request(app).get('/api/xp-entries').set(auth)
+  const entryId = history.body[0].id as string
+  const exported = await request(app)
+    .get('/api/exports/achievements.csv')
+    .set(auth)
+  expect(exported.status).toBe(200)
+  expect(exported.headers['content-disposition']).toContain('achievements.csv')
+  expect(exported.text).toBe(
+    [
+      'id,skill_id,skill,code,name,description,icon,xp,bonus_award,obtained,obtained_at,earned_entry_id',
+      `${earned.body.id},${skillId},Marksmanship,MRK,A bullseye,"Hit the ""center"", twice\nKeep practicing","${icon}",100,"Arrows, gold",yes,2026-10-05,${entryId}`,
+      `${unearned.body.id},${skillId},Marksmanship,MRK,Z future milestone,,🏆,0,,no,,`,
+    ].join('\n'),
+  )
+  const historyExport = await request(app)
+    .get('/api/exports/xp-history.csv')
+    .set(auth)
+  expect(historyExport.text).toContain(entryId)
+  expect(historyExport.text).toContain('achievement')
+
+  const other = await setup('another-user')
+  const otherExport = await request(app)
+    .get('/api/exports/achievements.csv')
+    .set(other.auth)
+  expect(otherExport.text).toBe(exported.text.split('\n')[0])
+  expect((await request(app).get('/api/exports/achievements.csv')).status).toBe(
+    401,
+  )
+})
+
 it('isolates achievements and history by user, including entry lookup', async () => {
   const first = await setup()
   const second = await setup('another-user')

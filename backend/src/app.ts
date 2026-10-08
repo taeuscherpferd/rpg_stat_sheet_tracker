@@ -549,6 +549,57 @@ export const createApp = (
   })
 
   app.get(
+    '/api/exports/achievements.csv',
+    requireSession,
+    (_request, response) => {
+      const skills = new Map(
+        database.listSkills(userId(response)).map((skill) => [skill.id, skill]),
+      )
+      const lines = [
+        [
+          'id',
+          'skill_id',
+          'skill',
+          'code',
+          'name',
+          'description',
+          'icon',
+          'xp',
+          'bonus_award',
+          'obtained',
+          'obtained_at',
+          'earned_entry_id',
+        ].join(','),
+      ]
+      for (const achievement of database.listAchievements(userId(response))) {
+        const skill = skills.get(achievement.skillId)
+        lines.push(
+          [
+            achievement.id,
+            achievement.skillId,
+            skill?.name ?? '',
+            skill?.code ?? '',
+            achievement.name,
+            achievement.description,
+            achievement.icon,
+            achievement.xp,
+            achievement.bonusAward,
+            achievement.earnedEntryId === null ? 'no' : 'yes',
+            achievement.obtainedAt,
+            achievement.earnedEntryId,
+          ]
+            .map(csvCell)
+            .join(','),
+        )
+      }
+      response
+        .type('text/csv')
+        .attachment('achievements.csv')
+        .send(lines.join('\n'))
+    },
+  )
+
+  app.get(
     '/api/exports/xp-history.csv',
     requireSession,
     (_request, response) => {

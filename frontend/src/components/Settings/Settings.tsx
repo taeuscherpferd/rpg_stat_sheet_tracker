@@ -426,6 +426,24 @@ export const Settings = () => {
                   disabled={offline}
                   onClick={() =>
                     void downloadExport(
+                      '/exports/achievements.csv',
+                      'achievements.csv',
+                    )
+                  }
+                >
+                  <Download size={20} />
+                  <span>
+                    <strong>Achievements CSV</strong>
+                    <small>
+                      All achievements, images, rewards, and earned status
+                    </small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  disabled={offline}
+                  onClick={() =>
+                    void downloadExport(
                       '/exports/xp-history.csv',
                       'xp-history.csv',
                     )

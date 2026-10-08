@@ -187,7 +187,7 @@ An assistant should call `listSkills` first, select the stable skill UUID or uni
 
 ## Data and Exports
 
-SQLite migrations run automatically at startup. XP totals and levels are derived from the award ledger, while linked awards retain the percentages active when the entry was created. Settings provides separate skills and XP-history CSV downloads.
+SQLite migrations run automatically at startup. XP totals and levels are derived from the award ledger, while linked awards retain the percentages active when the entry was created. Settings provides separate skills, achievements, and XP-history CSV downloads. Export all three to retain the skill ledger and achievement catalog. The achievements CSV includes earned and unearned achievements, including archived skills, with stable skill IDs, descriptions, emoji or embedded image data, XP rewards, bonus award text, earned dates, and linked XP-entry IDs. Obtained achievement awards also appear in the XP-history CSV. CSV files are portable data exports; the app does not currently import them. For a directly restorable backup, use the SQLite database backup described above, which includes achievements and their linked ledger entries.
 
 The application is designed for trusted self-hosted use. Keep the database file and API keys private and terminate TLS at a reverse proxy when exposing it beyond localhost.
 
