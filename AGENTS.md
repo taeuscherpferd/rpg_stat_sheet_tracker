@@ -89,4 +89,3 @@ export const MyComponent = ({myString}: MyComponentProps) => {...}
 - Avoid duplicating styles when possible
 - Make use of css variables for theming
 - NEVER use !important, always make selectors more specific or restructure. Do not use the !important tag
-
