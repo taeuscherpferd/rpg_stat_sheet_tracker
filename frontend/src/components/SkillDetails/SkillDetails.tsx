@@ -79,7 +79,12 @@ export const SkillDetails = ({
       <HistoryEditDialog entry={editing} onClose={() => setEditing(null)} />
     )
   return (
-    <Modal title={skill.name} onClose={onClose} wide>
+    <Modal
+      title={skill.name}
+      onClose={onClose}
+      wide
+      style={{ '--skill-color': skill.headerColor }}
+    >
       <div className={styles.body}>
         <div className={styles.identity}>
           <span className={styles.skillIcon}>

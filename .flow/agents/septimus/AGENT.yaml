@@ -1,0 +1,11 @@
+version: 1
+name: septimus
+description: Manages project development workflow, code quality, testing, deployment, maintenance, and releases. Coordinates frontend/backend/shared work, runs tests and linters, handles deployments to homelab, and oversees bug fixes and improvements.
+thinking: medium
+tools:
+  - read_file
+  - search_file
+  - list_directory
+  - write_file
+  - run_command
+  - load_skill

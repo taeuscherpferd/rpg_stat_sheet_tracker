@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { X } from 'lucide-react'
 import styles from './Modal.module.scss'
 
@@ -7,6 +7,7 @@ interface ModalProps {
   children: ReactNode
   onClose: () => void
   wide?: boolean
+  style?: CSSProperties
 }
 
 export const Modal = ({
@@ -14,6 +15,7 @@ export const Modal = ({
   children,
   onClose,
   wide = false,
+  style,
 }: ModalProps) => (
   <div
     className={styles.backdrop}
@@ -27,6 +29,7 @@ export const Modal = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
+      style={style}
     >
       <header>
         <h2 id="modal-title">{title}</h2>
