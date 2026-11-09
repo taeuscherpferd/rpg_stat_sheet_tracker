@@ -1,5 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
+import type { CustomPropertyStyle } from '@/types/style'
 import styles from './Modal.module.scss'
 
 interface ModalProps {
@@ -7,7 +8,7 @@ interface ModalProps {
   children: ReactNode
   onClose: () => void
   wide?: boolean
-  style?: CSSProperties
+  style?: CustomPropertyStyle
 }
 
 export const Modal = ({

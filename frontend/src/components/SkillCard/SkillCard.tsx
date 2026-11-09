@@ -4,15 +4,9 @@ import {
 } from '@/components/XpCelebration/XpCelebration.logic'
 import type { SkillResponse } from '@rlrpg/shared/contracts'
 import { Link2, Pencil, Plus } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import type { CustomPropertyStyle } from '@/types/style'
 import { SkillCardLogic } from './SkillCard.logic'
 import styles from './SkillCard.module.scss'
-
-type SkillCardStyle = CSSProperties & {
-  '--skill-color': string
-  '--skill-progress': string
-  '--skill-progress-duration': string
-}
 
 interface SkillCardProps {
   skill: SkillResponse
@@ -90,7 +84,7 @@ export const SkillCard = ({
           '--skill-color': skill.headerColor,
           '--skill-progress': `${progressPercent}%`,
           '--skill-progress-duration': `${animatedProgress?.transitionMs ?? 0}ms`,
-        } as SkillCardStyle
+        } as CustomPropertyStyle
       }
     >
       {onDetails === undefined ? (
