@@ -197,7 +197,7 @@
 }
 .keyForm {
   display: grid;
-  grid-template-columns: 1fr 170px auto;
+  grid-template-columns: minmax(0, 1fr) 200px auto;
   align-items: end;
   gap: 10px;
   padding: 16px 0;

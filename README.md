@@ -164,7 +164,7 @@ the application before installing the PWA from another device.
 
 ## Automation API
 
-Create a named **XP writer** key under Settings → Automation. The key is displayed once and stored only as a hash. Interactive documentation is available at `/api/docs`; the OpenAPI document is `/api/openapi.json`.
+Under Settings → Automation, choose **Create skills + award XP** to create a writer key. Existing writer keys also have these permissions and can be reused. The key is displayed once and stored only as a hash. Interactive documentation is available at `/api/docs`; the OpenAPI document is `/api/openapi.json`.
 
 Discover a skill:
 
@@ -172,6 +172,29 @@ Discover a skill:
 curl -H "Authorization: Bearer $RLRPG_API_KEY" \
   "http://localhost:3000/api/v1/automation/skills?q=korean"
 ```
+
+Create a fully configured skill with a writer key:
+
+```bash
+curl -X POST "http://localhost:3000/api/v1/automation/skills" \
+  -H "Authorization: Bearer $RLRPG_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Korean","code":"KOR","emoji":"🇰🇷","tags":["language"],"headerColor":"#334b3f","startingLevel":5,"links":[{"targetSkillId":"REPLACE_WITH_EXISTING_SKILL_UUID","percentage":20}]}'
+```
+
+The `createSkill` operation accepts every setting from the skill creation dialog:
+
+| Field           | Rules / default                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`          | Required; 1–80 UTF-16 code units after trimming                                                                                                 |
+| `code`          | Required; exactly three uppercase letters or digits; unique per user, including archived skills                                                 |
+| `emoji`         | Optional; null by default, up to 16 UTF-16 code units after trimming                                                                            |
+| `tags`          | Up to eight tags, each 1–24 UTF-16 code units after trimming; unique ignoring case; defaults to `[]`                                            |
+| `headerColor`   | Six-digit hex color for both header and XP bar; defaults to `#334b3f`                                                                           |
+| `startingLevel` | Integer from 1 to 9999; defaults to 1; initializes XP without history entries or linked awards                                                  |
+| `links`         | Up to three distinct active skills owned by this user, each with a `targetSkillId` UUID and integer `percentage` from 1 to 30; defaults to `[]` |
+
+Use `listSkills` to resolve link target IDs before creating the skill, or omit `links` if none are needed. Success returns HTTP 201 with the skill's ID, saved configuration, and current progression. Reader keys receive 403; invalid settings receive 400, missing or foreign link targets receive 404, and duplicate codes or archived link targets receive 409. Skill creation does not use `Idempotency-Key`: a repeated code returns 409 without creating another skill. After an uncertain response, query by code to check whether creation succeeded.
 
 Award XP safely from a retryable script:
 

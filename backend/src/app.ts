@@ -295,14 +295,20 @@ export const createApp = (
     )
   })
 
-  app.post('/api/skills', requireSession, (request, response) => {
+  const createSkill = (
+    request: Request,
+    response: Response,
+    ownerId: string,
+  ): void => {
     const input = skillInputSchema.parse(request.body)
-    const id = ledger.createSkill(userId(response), input)
+    const id = ledger.createSkill(ownerId, input)
     response
       .status(201)
-      .json(
-        database.listSkills(userId(response)).find((skill) => skill.id === id),
-      )
+      .json(database.listSkills(ownerId).find((skill) => skill.id === id))
+  }
+
+  app.post('/api/skills', requireSession, (request, response) => {
+    createSkill(request, response, userId(response))
   })
 
   app.put('/api/skills/:skillId', requireSession, (request, response) => {
@@ -675,6 +681,16 @@ export const createApp = (
           skill.tags.some((tag) => tag.toLocaleLowerCase().includes(query)),
       )
     response.json(skills)
+  })
+  automation.post('/skills', (request, response) => {
+    const identity = apiIdentity(response)
+    if (identity.preset !== 'writer')
+      throw new DomainError(
+        'This API key cannot create skills',
+        403,
+        'INSUFFICIENT_SCOPE',
+      )
+    createSkill(request, response, identity.user_id)
   })
   automation.get('/skills/:skillId', (request, response) => {
     const skill = database

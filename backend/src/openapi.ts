@@ -1,10 +1,36 @@
+import { z } from 'zod'
+import { skillInputSchema } from '@rlrpg/shared/contracts'
+
+const { name, emoji, tags } = skillInputSchema.shape
+const trimmedSkillStrings = new Set<z.core.$ZodType>([
+  name,
+  emoji.unwrap().unwrap(),
+  tags.removeDefault().element,
+])
+
+const skillInputJsonSchema = z.toJSONSchema(skillInputSchema, {
+  io: 'input',
+  override: ({ zodSchema, jsonSchema }) => {
+    if (
+      !trimmedSkillStrings.has(zodSchema) ||
+      jsonSchema.maxLength === undefined
+    )
+      return
+
+    const { minLength = 0, maxLength } = jsonSchema
+    delete jsonSchema.minLength
+    delete jsonSchema.maxLength
+    jsonSchema.description = `The server trims this value with JavaScript String.prototype.trim() and requires ${minLength}–${maxLength} UTF-16 code units after trimming.`
+  },
+})
+
 export const openApiDocument = {
   openapi: '3.1.0',
   info: {
     title: 'RLRPG Automation API',
-    version: '1.1.0',
+    version: '1.2.0',
     description:
-      'Discover skills, query complete XP history, and award XP from scripts or digital assistants. Reader and writer keys can read all history belonging to their user. Dates are inclusive calendar dates in the user timezone.',
+      'Discover and create fully configured skills, query complete XP history, and award XP from scripts or digital assistants. Reader and writer keys can read all history belonging to their user. Dates are inclusive calendar dates in the user timezone.',
   },
   servers: [{ url: '/api/v1/automation' }],
   components: {
@@ -12,6 +38,49 @@ export const openApiDocument = {
       apiKey: { type: 'http', scheme: 'bearer', bearerFormat: 'RLRPG API key' },
     },
     schemas: {
+      SkillInput: skillInputJsonSchema,
+      Skill: {
+        type: 'object',
+        required: [
+          'id',
+          'name',
+          'code',
+          'emoji',
+          'tags',
+          'headerColor',
+          'archived',
+          'totalXp',
+          'level',
+          'levelXp',
+          'nextLevelXp',
+          'links',
+        ],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string' },
+          code: { type: 'string' },
+          emoji: { type: ['string', 'null'] },
+          tags: { type: 'array', items: { type: 'string' } },
+          headerColor: { type: 'string' },
+          archived: { type: 'boolean' },
+          totalXp: { type: 'integer' },
+          level: { type: 'integer' },
+          levelXp: { type: 'integer' },
+          nextLevelXp: { type: 'integer' },
+          links: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['targetSkillId', 'targetSkillName', 'percentage'],
+              properties: {
+                targetSkillId: { type: 'string', format: 'uuid' },
+                targetSkillName: { type: 'string' },
+                percentage: { type: 'integer' },
+              },
+            },
+          },
+        },
+      },
       XpEntry: {
         type: 'object',
         properties: {
@@ -71,6 +140,43 @@ export const openApiDocument = {
   security: [{ apiKey: [] }],
   paths: {
     '/skills': {
+      post: {
+        operationId: 'createSkill',
+        summary: 'Create a fully configured skill (writer key required)',
+        description:
+          'Creates an active skill owned by the API key user. Name and code are required. Codes are unique per user, including archived skills. Tags must be unique ignoring case. Up to three distinct links may target existing active skills owned by the same user; use listSkills to find their IDs. headerColor sets both header and XP bar color. startingLevel defaults to 1 and initializes progression without creating an XP history entry or awarding linked XP. Repeated requests with the same code return 409; this endpoint does not support Idempotency-Key.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SkillInput' },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description:
+              'Created skill with its ID, configuration, and progression',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Skill' },
+              },
+            },
+          },
+          '400': { description: 'Invalid skill settings or duplicate links' },
+          '401': { description: 'Missing, invalid, or revoked API key' },
+          '403': {
+            description: 'Writer API key required (INSUFFICIENT_SCOPE)',
+          },
+          '404': {
+            description: 'Linked skill not found or owned by another user',
+          },
+          '409': {
+            description: 'Code already exists or linked skill is archived',
+          },
+          '429': { description: 'Automation rate limit exceeded' },
+        },
+      },
       get: {
         operationId: 'listSkills',
         summary: 'List active skills and current progression',

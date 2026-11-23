@@ -317,7 +317,7 @@ export const Settings = () => {
               <h2>Automation keys</h2>
               <p>
                 Create a key for scripts or assistants. The secret is only shown
-                once.
+                once. Both presets can read skills and XP history.
               </p>
               {offline && (
                 <p role="status">
@@ -360,7 +360,7 @@ export const Settings = () => {
                       setKeyPreset(event.target.value as 'reader' | 'writer')
                     }
                   >
-                    <option value="writer">XP writer</option>
+                    <option value="writer">Create skills + award XP</option>
                     <option value="reader">Skills + history reader</option>
                   </select>
                 </label>
@@ -379,8 +379,8 @@ export const Settings = () => {
                       <strong>{key.name}</strong>
                       <small>
                         {key.preset === 'writer'
-                          ? 'Skills + history read + XP write'
-                          : 'Skills + history read'}{' '}
+                          ? 'Read skills and XP history, create skills, and award XP'
+                          : 'Read skills and XP history'}{' '}
                         · …{key.prefix}
                       </small>
                     </span>
