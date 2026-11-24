@@ -1,0 +1,107 @@
+.controls {
+  padding: 15px 22px;
+  margin: 18px 0 16px;
+  border: 1px solid rgba(89, 67, 41, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 248, 232, 0.91);
+  text-align: left;
+}
+
+.backgroundPicker {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.backgroundOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+  gap: 9px;
+  margin-top: 9px;
+}
+
+.backgroundOption {
+  min-width: 0;
+  padding: 3px;
+  overflow: hidden;
+  border: 2px solid rgba(89, 67, 41, 0.25);
+  border-radius: 5px;
+  color: var(--ink-soft);
+  background: #fffdf7;
+  cursor: pointer;
+
+  &:hover,
+  &[aria-pressed='true'] {
+    border-color: var(--forest);
+    color: var(--forest);
+    background: #eee6d1;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--rust);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    border-color: rgba(89, 67, 41, 0.2);
+    color: var(--ink-soft);
+    background: #eee9dd;
+
+    .thumbnail {
+      filter: saturate(0.35);
+      opacity: 0.65;
+    }
+  }
+}
+
+.unlockRequirement {
+  display: block;
+  padding: 0 2px 5px;
+  font:
+    11px 'Source Serif 4',
+    Georgia,
+    serif;
+}
+
+.unlockProgress {
+  display: block;
+  width: calc(100% - 10px);
+  height: 5px;
+  margin: 0 5px 5px;
+  accent-color: var(--forest);
+}
+
+.thumbnail {
+  position: relative;
+  display: block;
+  height: 74px;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.choiceName {
+  display: block;
+  padding: 6px 2px;
+  font:
+    600 13px 'Source Serif 4',
+    Georgia,
+    serif;
+}
+
+.label {
+  display: block;
+  color: var(--ink-soft);
+  font:
+    600 11px 'Cinzel',
+    serif;
+  letter-spacing: 0.06em;
+}
+
+.hint {
+  margin: 7px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.4;
+}

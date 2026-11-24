@@ -31,6 +31,97 @@ const setup = async (username = 'adventurer') => {
   }
 }
 
+it('edits streak marks on old activities, preserves omitted marks, and updates skill streaks', async () => {
+  const { app, auth, skillId } = await setup()
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Denver',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+  const previous = new Date(`${today}T12:00:00Z`)
+  previous.setUTCDate(previous.getUTCDate() - 1)
+  const yesterday = previous.toISOString().slice(0, 10)
+  const input = {
+    date: today,
+    xp: 100,
+    activity: 'Old practice',
+    minutes: 15,
+    notes: 'Keep these notes',
+  }
+  const first = await request(app)
+    .post('/api/xp-entries')
+    .set(auth)
+    .send({ ...input, skillId })
+  const firstUrl = `/api/xp-entries/${first.body.id}`
+  expect(
+    (
+      await request(app)
+        .put(firstUrl)
+        .set(auth)
+        .send({ ...input, streak: true })
+    ).body.streak,
+  ).toBe(true)
+  expect(
+    (await request(app).get('/api/skills').set(auth)).body[0],
+  ).toMatchObject({ streakCount: 1, totalXp: 100 })
+  const preserved = await request(app)
+    .put(firstUrl)
+    .set(auth)
+    .send({ ...input, xp: 125 })
+  expect(preserved.body).toMatchObject({
+    streak: true,
+    xp: 125,
+    notes: 'Keep these notes',
+  })
+  const second = await request(app)
+    .post('/api/xp-entries')
+    .set(auth)
+    .send({ ...input, skillId, streak: true })
+  const secondUrl = `/api/xp-entries/${second.body.id}`
+  expect(
+    (
+      await request(app)
+        .put(firstUrl)
+        .set(auth)
+        .send({ ...input, xp: 125, streak: false })
+    ).body.streak,
+  ).toBe(false)
+  expect(
+    (await request(app).get('/api/skills').set(auth)).body[0].streakCount,
+  ).toBe(1)
+  expect(
+    (
+      await request(app)
+        .put(secondUrl)
+        .set(auth)
+        .send({ ...input, streak: false })
+    ).body.streak,
+  ).toBe(false)
+  expect(
+    (await request(app).get('/api/skills').set(auth)).body[0].streakCount,
+  ).toBe(0)
+  expect(
+    (
+      await request(app)
+        .put(firstUrl)
+        .set(auth)
+        .send({ ...input, date: yesterday, xp: 125, streak: true })
+    ).status,
+  ).toBe(200)
+  expect(
+    (
+      await request(app)
+        .put(secondUrl)
+        .set(auth)
+        .send({ ...input, streak: true })
+    ).status,
+  ).toBe(200)
+  expect(
+    (await request(app).get('/api/skills').set(auth)).body[0],
+  ).toMatchObject({ streakCount: 2, totalXp: 225 })
+})
+
 it('obtains once, snapshots linked rewards, and undoes through the XP ledger', async () => {
   const { app, auth, skillId } = await setup()
   const linked = await request(app)

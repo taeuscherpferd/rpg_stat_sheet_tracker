@@ -54,12 +54,20 @@ it('shows unearned achievements and obtains one through its details', async () =
     name: 'Bullseye',
     icon: '🎯',
     description: 'Hit the center',
-    xp: 50,
+    xp: 0,
     bonusAward: 'New arrows',
     earnedEntryId: null,
     obtainedAt: null,
   }
   const adapter: AxiosAdapter = async (config) => {
+    if (
+      config.method === 'put' &&
+      config.url === '/skills/skill-1/achievements/achievement-1'
+    ) {
+      const input = JSON.parse(config.data as string) as { xp: number }
+      expect(typeof input.xp).toBe('number')
+      achievement = { ...achievement, xp: input.xp }
+    }
     if (config.url === '/achievements/achievement-1/obtained') {
       expect(JSON.parse(config.data as string)).toEqual({ obtained: true })
       achievement = {
@@ -98,8 +106,22 @@ it('shows unearned achievements and obtains one through its details', async () =
   fireEvent.click(screen.getByTitle('Bullseye · Not obtained'))
   expect(screen.getByLabelText('Name')).toHaveValue('Bullseye')
   expect(screen.getByLabelText('Bonus award')).toHaveValue('New arrows')
+  const xpInput = screen.getByLabelText('XP reward')
+  expect(xpInput).toHaveValue(0)
+  fireEvent.change(xpInput, { target: { value: '' } })
+  expect(xpInput).toHaveValue(null)
+  expect(xpInput).toBeInvalid()
+  fireEvent.change(xpInput, { target: { value: '75' } })
+  expect(xpInput).toHaveValue(75)
+  expect(xpInput).toBeValid()
+  fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await waitFor(() =>
+    expect(screen.getByTitle('Bullseye · Not obtained')).toBeInTheDocument(),
+  )
+  fireEvent.click(screen.getByTitle('Bullseye · Not obtained'))
+  expect(screen.getByLabelText('XP reward')).toHaveValue(75)
   fireEvent.click(
-    screen.getByRole('button', { name: 'Mark obtained (+50 XP)' }),
+    screen.getByRole('button', { name: 'Mark obtained (+75 XP)' }),
   )
   await waitFor(() =>
     expect(screen.getByTitle('Bullseye · Obtained')).toBeInTheDocument(),

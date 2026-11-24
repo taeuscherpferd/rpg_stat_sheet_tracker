@@ -1,7 +1,7 @@
-import { BookOpen, Settings as SettingsIcon, Timer } from 'lucide-react'
+import { BookOpen, Settings as SettingsIcon, Shield, Timer } from 'lucide-react'
 import styles from './Header.module.scss'
 
-export type AppPage = 'skills' | 'focus' | 'settings'
+export type AppPage = 'skills' | 'focus' | 'characters' | 'settings'
 interface HeaderProps {
   page: AppPage
   username: string
@@ -34,6 +34,14 @@ export const Header = ({ page, username, onNavigate }: HeaderProps) => (
       >
         <Timer size={18} />
         <span>Focused Practice</span>
+      </button>
+      <button
+        className={page === 'characters' ? styles.active : ''}
+        type="button"
+        onClick={() => onNavigate('characters')}
+      >
+        <Shield size={18} />
+        <span>Character</span>
       </button>
       <button
         className={page === 'settings' ? styles.active : ''}

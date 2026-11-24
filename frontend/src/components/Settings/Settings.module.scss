@@ -152,6 +152,19 @@
     }
   }
 }
+.entryName {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.entryStreakIcon {
+  width: 18px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .entryXp {
   text-align: right;
   color: var(--forest);

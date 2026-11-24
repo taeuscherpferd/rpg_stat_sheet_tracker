@@ -1,0 +1,25 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--rust);
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  img {
+    width: 25px;
+    height: 29px;
+    object-fit: contain;
+  }
+}
+
+.compact {
+  gap: 2px;
+  font-size: 12px;
+
+  img {
+    width: 13px;
+    height: 16px;
+  }
+}

@@ -1,0 +1,215 @@
+.calendar {
+  min-width: 0;
+}
+
+.streakOverview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: rgba(255, 248, 230, 0.62);
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+}
+
+.streakHint {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.dayHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2px;
+  width: 100%;
+}
+
+.header,
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    color: var(--forest);
+    font:
+      600 21px 'Cinzel',
+      serif;
+  }
+}
+
+.navigation button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  min-width: 38px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--forest);
+  background: rgba(255, 253, 247, 0.75);
+}
+
+.monthPicker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
+
+  input {
+    max-width: 100%;
+    min-height: 38px;
+    padding: 6px 9px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink);
+    background: rgba(255, 253, 247, 0.75);
+    font: inherit;
+  }
+}
+
+.hint {
+  color: var(--ink-soft);
+  font-size: 13px;
+  margin: 12px 0;
+}
+
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.weekdays {
+  padding: 8px 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  text-align: center;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 118px;
+  min-width: 0;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink-soft);
+  background: rgba(255, 253, 247, 0.7);
+  font: inherit;
+  cursor: pointer;
+
+  strong {
+    color: var(--forest);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  small {
+    font-size: 11px;
+  }
+  &:hover {
+    border-color: var(--forest);
+  }
+  &[aria-current='date'] .dayNumber {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  &[aria-pressed='true'] {
+    outline: 2px solid var(--forest);
+    outline-offset: -2px;
+    background: #e1e8d9;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--rust);
+    outline-offset: 1px;
+  }
+}
+
+.dayNumber {
+  font-size: 14px;
+  font-weight: 600;
+}
+.daySkills {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+.skillChip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 2px 3px;
+  border-radius: 3px;
+  background: rgba(80, 112, 81, 0.1);
+  font-size: 11px;
+}
+.skillEmoji {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.skillName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.outside {
+  opacity: 0.45;
+}
+.hasEntries {
+  background: rgba(189, 204, 174, 0.3);
+}
+@media (max-width: 550px) {
+  .day {
+    min-height: 100px;
+    padding: 5px 3px;
+    gap: 3px;
+    strong {
+      font-size: 11px;
+    }
+  }
+  .skillChip {
+    padding: 2px 0;
+    gap: 1px;
+    font-size: 9px;
+  }
+  .skillEmoji {
+    font-size: 11px;
+  }
+  .days,
+  .weekdays {
+    gap: 2px;
+  }
+  .entryLabel,
+  .xpLabel {
+    display: none;
+  }
+}

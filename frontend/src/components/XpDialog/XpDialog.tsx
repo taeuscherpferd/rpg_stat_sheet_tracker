@@ -1,9 +1,10 @@
 import { type FormEvent, useEffect, useState } from 'react'
-import { Flame } from 'lucide-react'
 import type { SkillResponse } from '@rlrpg/shared/contracts'
 import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { api } from '@/api'
 import { AppLogic } from '@/components/App/App.logic'
+import { WholeNumberInput } from '@/components/WholeNumberInput/WholeNumberInput'
+import { StreakToggle } from '@/components/StreakToggle/StreakToggle'
 import { Modal } from '@/components/Modal/Modal'
 import {
   XpCelebrationLogic,
@@ -21,9 +22,7 @@ interface XpDialogProps {
 
 export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
   const dispatch = useAppDispatch()
-  const { settings, connection, entries } = useAppSelector(
-    (state) => state.app,
-  )
+  const { settings, connection, entries } = useAppSelector((state) => state.app)
   const offline = connection === 'offline'
   const [date, setDate] = useState(AppLogic.today())
   const [xp, setXp] = useState('')
@@ -108,38 +107,22 @@ export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
           </label>
           <label>
             XP gained
-            <input
+            <WholeNumberInput
               required
               autoFocus
-              type="number"
               min={1}
               max={settings?.maximumManualXp ?? DEFAULT_MAXIMUM_MANUAL_XP}
               value={xp}
-              onChange={(event) => setXp(event.target.value)}
+              onValueChange={setXp}
             />
           </label>
         </div>
-        <button
-          className={`${styles.streakToggle} ${streak ? styles.streakActive : ''}`}
-          type="button"
-          aria-pressed={streak}
-          aria-label="Count this XP entry toward the skill streak"
-          onClick={() => setStreak((wasMarked) => !wasMarked)}
-        >
-          <span className={styles.streakBox} aria-hidden="true">
-            {streak && '✓'}
-          </span>
-          <span>Streak</span>
-          {streak ? (
-            <span className={styles.streakCount}>
-              <Flame size={18} aria-hidden="true" /> {streakPreview()}
-            </span>
-          ) : (
-            <span className={styles.streakCurrent}>
-              {skill.streakCount ?? 0} day streak
-            </span>
-          )}
-        </button>
+        <StreakToggle
+          pressed={streak}
+          count={streak && date ? streakPreview() : 0}
+          currentCount={skill.streakCount ?? 0}
+          onChange={setStreak}
+        />
         <label>
           Time spent <span>(minutes)</span>
           <input

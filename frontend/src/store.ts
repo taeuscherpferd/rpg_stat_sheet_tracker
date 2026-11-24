@@ -234,6 +234,7 @@ export const editXp = createAsyncThunk(
     minutes: number | null
     activity: string | null
     notes: string | null
+    streak?: boolean
   }) => {
     try {
       await api.put(`/xp-entries/${input.id}`, input)
