@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertCircle, CloudOff, X } from 'lucide-react'
 import { AuthScreen } from '@/components/AuthScreen/AuthScreen'
+import { CharacterPage } from '@/components/CharacterPage/CharacterPage'
+import { CharacterBackgroundLogic } from '@/components/CharacterBackground/CharacterBackground.logic'
 import { FocusedPractice } from '@/components/FocusedPractice/FocusedPractice'
 import { Header, type AppPage } from '@/components/Header/Header'
 import { Settings } from '@/components/Settings/Settings'
@@ -15,8 +17,16 @@ import styles from './App.module.scss'
 
 export const App = () => {
   const dispatch = useAppDispatch()
-  const { user, initialized, hasLoadedData, connection, lastSyncedAt, error } =
-    useAppSelector((state) => state.app)
+  const {
+    user,
+    initialized,
+    hasLoadedData,
+    connection,
+    lastSyncedAt,
+    error,
+    achievements,
+    skills,
+  } = useAppSelector((state) => state.app)
   const userId = user?.id ?? null
   const [page, setPage] = useState<AppPage>('skills')
   const [xpCelebration, setXpCelebration] = useState<XpCelebrationEvent | null>(
@@ -112,6 +122,14 @@ export const App = () => {
           />
         )}
         {page === 'focus' && <FocusedPractice />}
+        {page === 'characters' && (
+          <CharacterPage
+            key={user.id}
+            userId={user.id}
+            achievements={achievements}
+            totalXp={CharacterBackgroundLogic.totalXp(skills)}
+          />
+        )}
         {page === 'settings' && <Settings />}
       </main>
     </div>

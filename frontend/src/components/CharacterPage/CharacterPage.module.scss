@@ -1,0 +1,256 @@
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.intro {
+  margin: 10px 0 28px;
+  text-align: center;
+  h1 {
+    margin: 3px 0 5px;
+    color: var(--forest);
+    font:
+      600 34px 'Cinzel',
+      serif;
+  }
+  p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 17px;
+  }
+}
+
+.kicker,
+.eyebrow {
+  color: var(--rust);
+  font:
+    600 12px 'Cinzel',
+    serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.characterForm {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1fr 1.2fr;
+  align-items: start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(89, 67, 41, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 248, 232, 0.9);
+  box-shadow: 0 5px 16px rgba(55, 43, 27, 0.09);
+  label {
+    display: grid;
+    gap: 6px;
+    color: var(--ink-soft);
+    font:
+      600 13px 'Cinzel',
+      serif;
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 11px;
+    border: 1px solid rgba(89, 67, 41, 0.42);
+    border-radius: 4px;
+    color: var(--ink);
+    background: #fffdf7;
+    font:
+      16px 'Source Serif 4',
+      Georgia,
+      serif;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 110px;
+  }
+}
+
+.descriptionField {
+  grid-column: 1 / -1;
+}
+
+.formHint {
+  margin: 9px 2px 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.previewPrompt {
+  margin: 18px 0 0;
+  padding: 28px 18px;
+  border: 1px dashed rgba(89, 67, 41, 0.4);
+  border-radius: 6px;
+  color: var(--ink-soft);
+  background: rgba(255, 248, 232, 0.68);
+  text-align: center;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid rgba(89, 67, 41, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 248, 232, 0.91);
+  box-shadow: 0 9px 24px rgba(55, 43, 27, 0.14);
+}
+
+.portrait {
+  min-height: 360px;
+  position: relative;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+  background: #e4dcbf;
+}
+
+.art {
+  position: relative;
+  width: min(100%, 276.923px);
+  aspect-ratio: 160 / 208;
+  overflow: hidden;
+  filter: drop-shadow(0 6px 2px rgba(55, 43, 27, 0.08));
+  transform-origin: center 96.153846%;
+  animation: idle-breath 1.8s ease-in-out infinite;
+}
+
+.spriteSheet {
+  position: absolute;
+  top: 0;
+  left: var(--sprite-column-offset, 0%);
+  width: 1000%;
+  max-width: none;
+  height: 600%;
+  image-rendering: auto;
+}
+
+@for $column from 0 through 9 {
+  .spriteColumn#{$column} {
+    --sprite-column-offset: -#{$column * 100%};
+  }
+}
+
+@keyframes idle-breath {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.975);
+  }
+}
+
+.role {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 10px;
+  border: 1px solid rgba(87, 66, 42, 0.35);
+  border-radius: 20px;
+  color: var(--forest);
+  background: rgba(255, 248, 232, 0.82);
+  font-size: 13px;
+}
+
+.details {
+  padding: 18px 22px 22px;
+  border-top: 1px solid rgba(89, 67, 41, 0.2);
+  h2 {
+    margin: 2px 0 5px;
+    color: var(--ink);
+    font:
+      600 24px 'Cinzel',
+      serif;
+  }
+  p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+}
+
+.details .characterGender {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.characterDescription {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.selectButton,
+.changeButton {
+  min-height: 42px;
+  margin-top: 18px;
+  padding: 9px 15px;
+  border: 1px solid #283d33;
+  border-radius: 4px;
+  color: #fff8e8;
+  background: var(--forest);
+  transition: background-color 120ms ease;
+  &:hover {
+    background: #263a2f;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    color: #716c5f;
+    border-color: rgba(89, 67, 41, 0.25);
+    background: #dfd7c2;
+  }
+}
+
+.selected {
+  max-width: 510px;
+  margin: 0 auto;
+  text-align: center;
+  .details {
+    text-align: left;
+  }
+}
+
+.changeButton {
+  margin-top: 16px;
+  color: var(--forest);
+  background: rgba(255, 248, 232, 0.9);
+  &:hover {
+    background: #fff8e8;
+  }
+}
+
+.eyebrow {
+  font-size: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art,
+  .spriteSheet {
+    animation: none;
+  }
+}
+
+@media (max-width: 850px) {
+  .characterForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .characterForm {
+    grid-template-columns: 1fr;
+    gap: 11px;
+    padding: 14px;
+  }
+  .portrait {
+    min-height: 330px;
+  }
+  .art {
+    width: min(100%, 253.846px);
+  }
+  .intro h1 {
+    font-size: 29px;
+  }
+}
