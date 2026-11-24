@@ -46,6 +46,66 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+.streakToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.35);
+  text-align: left;
+  cursor: pointer;
+}
+.streakActive {
+  border-color: rgba(200, 91, 42, 0.55);
+  color: var(--ink);
+  background: rgba(200, 91, 42, 0.08);
+}
+.streakBox {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+}
+.streakActive .streakBox {
+  border-color: #c85b2a;
+  background: #c85b2a;
+}
+.streakCount {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #c85b2a;
+  font-variant-numeric: tabular-nums;
+  animation: streak-pop 180ms ease-out;
+}
+.streakCurrent {
+  margin-left: auto;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+@keyframes streak-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 .share {
   margin: 0;
   padding: 10px 12px;

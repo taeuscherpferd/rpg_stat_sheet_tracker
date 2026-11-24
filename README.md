@@ -2,6 +2,8 @@
 
 RLRPG turns real-world practice into a personal RPG skill ledger. It tracks levels, linked-skill XP, manual activity, Focused Practice sessions, and automation events in a local SQLite database. Manual and automation entries default to a configurable maximum of 2,000 XP per entry. Awarded XP animates into each affected skill bar at a deliberate pace, including linked awards and progress across multiple levels, while each affected skill receives one confetti celebration comparing its former and final level. Focused Practice uses a repeating, configurable Pomodoro countdown with a circular remaining-time indicator and a chime at each completed interval, pauses while a completed session is being logged, resumes if logging is canceled, allows either an entire inaccurate session or individual completed intervals to be discarded from the completion menu, remembers each user's last practiced skill in local storage, and presents earned XP in a dismissible skill-card overlay without leaving the Focus page. Skills support tags, optional emojis, and an individually customizable color shared by the header and XP bar. Skill selectors display names before emojis so browser type-to-search works by skill name. The main skill sheet can be filtered by skill name, code, or tag and sorted by name or level.
 
+Manual XP entries can be marked as a streak day from Record XP. Each skill shows its current run of consecutive marked days, with same-day entries counted once.
+
 ## Setup
 
 Requirements: Node.js 24+ and pnpm 11+.

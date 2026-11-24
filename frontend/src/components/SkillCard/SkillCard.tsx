@@ -4,6 +4,7 @@ import {
 } from '@/components/XpCelebration/XpCelebration.logic'
 import type { SkillResponse } from '@rlrpg/shared/contracts'
 import { Link2, Pencil, Plus } from 'lucide-react'
+import streakFlame from '@/assets/streak-flame.png'
 import type { CustomPropertyStyle } from '@/types/style'
 import { SkillCardLogic } from './SkillCard.logic'
 import styles from './SkillCard.module.scss'
@@ -42,7 +43,18 @@ export const SkillCard = ({
       </span>
       <span className={styles.identity}>
         <strong>{skill.name}</strong>
-        <small>{skill.code}</small>
+        <span className={styles.identityMeta}>
+          <small>{skill.code}</small>
+          <span
+            className={styles.streakMeta}
+            title={`${skill.streakCount ?? 0} day streak`}
+            role="img"
+            aria-label={`${skill.streakCount ?? 0} day streak`}
+          >
+            <img src={streakFlame} alt="" />
+            <span aria-hidden="true">{skill.streakCount ?? 0}</span>
+          </span>
+        </span>
       </span>
       <span className={styles.level}>
         Level <strong>{displayedProgress.level}</strong>

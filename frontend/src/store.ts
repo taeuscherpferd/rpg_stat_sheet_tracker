@@ -215,6 +215,7 @@ export const addXp = createAsyncThunk(
     minutes: number | null
     activity: string | null
     notes: string | null
+    streak?: boolean
   }) => {
     try {
       return (await api.post<XpEntryResponse>('/xp-entries', input)).data

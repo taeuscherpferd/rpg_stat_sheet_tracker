@@ -439,8 +439,8 @@ export class LedgerService {
       .prepare(
         `
       INSERT INTO xp_entries
-        (id, user_id, skill_id, date, xp, minutes, activity, notes, source, origin, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, user_id, skill_id, date, xp, minutes, activity, notes, streak, source, origin, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
       )
       .run(
@@ -452,6 +452,7 @@ export class LedgerService {
         input.minutes ?? null,
         input.activity ?? null,
         input.notes ?? null,
+        input.streak === true ? 1 : 0,
         source,
         origin,
         now,

@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react'
+import { Flame } from 'lucide-react'
 import type { SkillResponse } from '@rlrpg/shared/contracts'
 import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { api } from '@/api'
@@ -20,13 +21,16 @@ interface XpDialogProps {
 
 export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
   const dispatch = useAppDispatch()
-  const { settings, connection } = useAppSelector((state) => state.app)
+  const { settings, connection, entries } = useAppSelector(
+    (state) => state.app,
+  )
   const offline = connection === 'offline'
   const [date, setDate] = useState(AppLogic.today())
   const [xp, setXp] = useState('')
   const [minutes, setMinutes] = useState('')
   const [activity, setActivity] = useState('')
   const [notes, setNotes] = useState('')
+  const [streak, setStreak] = useState(false)
   const [activities, setActivities] = useState<string[]>([])
 
   useEffect(() => {
@@ -56,6 +60,7 @@ export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
         minutes: minutes === '' ? null : Number(minutes),
         activity: activity || null,
         notes: notes || null,
+        streak,
       }),
     ).unwrap()
     onClose()
@@ -68,6 +73,24 @@ export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
         ),
       )
     }
+  }
+
+  const streakPreview = () => {
+    const markedDates = new Set(
+      entries
+        .filter((entry) => entry.skillId === skill.id && entry.streak === true)
+        .map((entry) => entry.date),
+    )
+    if (streak) markedDates.add(date)
+    let currentDate = date
+    let count = 0
+    while (markedDates.has(currentDate)) {
+      count += 1
+      const previousDate = new Date(`${currentDate}T00:00:00.000Z`)
+      previousDate.setUTCDate(previousDate.getUTCDate() - 1)
+      currentDate = previousDate.toISOString().slice(0, 10)
+    }
+    return count
   }
 
   return (
@@ -96,6 +119,27 @@ export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
             />
           </label>
         </div>
+        <button
+          className={`${styles.streakToggle} ${streak ? styles.streakActive : ''}`}
+          type="button"
+          aria-pressed={streak}
+          aria-label="Count this XP entry toward the skill streak"
+          onClick={() => setStreak((wasMarked) => !wasMarked)}
+        >
+          <span className={styles.streakBox} aria-hidden="true">
+            {streak && '✓'}
+          </span>
+          <span>Streak</span>
+          {streak ? (
+            <span className={styles.streakCount}>
+              <Flame size={18} aria-hidden="true" /> {streakPreview()}
+            </span>
+          ) : (
+            <span className={styles.streakCurrent}>
+              {skill.streakCount ?? 0} day streak
+            </span>
+          )}
+        </button>
         <label>
           Time spent <span>(minutes)</span>
           <input

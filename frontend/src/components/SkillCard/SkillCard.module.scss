@@ -60,6 +60,29 @@
   }
 }
 
+.identityMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.streakMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--rust);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+
+  img {
+    width: 17px;
+    height: 17px;
+    object-fit: contain;
+  }
+}
+
 .level {
   align-self: start;
   text-align: right;
