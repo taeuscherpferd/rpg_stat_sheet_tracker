@@ -1,0 +1,28 @@
+.switcher {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 18px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--forest);
+    background: rgba(255, 253, 247, 0.7);
+    font: inherit;
+    cursor: pointer;
+
+    &[aria-pressed='true'] {
+      color: #fff8e8;
+      background: var(--forest);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--rust);
+      outline-offset: 2px;
+    }
+  }
+}

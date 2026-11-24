@@ -10,7 +10,8 @@ import { api, apiErrorMessage } from '@/api'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { deleteXp, refreshData } from '@/store'
 import { Modal } from '@/components/Modal/Modal'
-import { HistoryList } from '@/components/Settings/HistoryList'
+import { WholeNumberInput } from '@/components/WholeNumberInput/WholeNumberInput'
+import { HistoryView } from '@/components/HistoryView/HistoryView'
 import { HistoryEditDialog } from '@/components/Settings/HistoryEditDialog'
 import styles from './SkillDetails.module.scss'
 
@@ -185,7 +186,9 @@ export const SkillDetails = ({
                   </select>
                 </label>
               </div>
-              <HistoryList
+              <HistoryView
+                skills={[skill]}
+                streakEntries={entries}
                 entries={history}
                 skillId={skill.id}
                 offline={offline}
@@ -214,7 +217,7 @@ const AchievementDialog = ({
   const [name, setName] = useState(achievement?.name ?? '')
   const [description, setDescription] = useState(achievement?.description ?? '')
   const [icon, setIcon] = useState(achievement?.icon ?? '🏆')
-  const [xp, setXp] = useState(achievement?.xp ?? 0)
+  const [xp, setXp] = useState(String(achievement?.xp ?? 0))
   const [bonusAward, setBonusAward] = useState(achievement?.bonusAward ?? '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -240,14 +243,14 @@ const AchievementDialog = ({
             name,
             description,
             icon,
-            xp,
+            xp: Number(xp),
             bonusAward,
           })
         : api.post(`/skills/${skill.id}/achievements`, {
             name,
             description,
             icon,
-            xp,
+            xp: Number(xp),
             bonusAward,
           }),
     )
@@ -320,13 +323,12 @@ const AchievementDialog = ({
           </label>
           <label>
             XP reward
-            <input
-              type="number"
+            <WholeNumberInput
               min={0}
               max={MAXIMUM_MANUAL_XP}
               required
               value={xp}
-              onChange={(e) => setXp(Number(e.target.value))}
+              onValueChange={setXp}
             />
           </label>
           <label>

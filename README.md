@@ -2,8 +2,6 @@
 
 RLRPG turns real-world practice into a personal RPG skill ledger. It tracks levels, linked-skill XP, manual activity, Focused Practice sessions, and automation events in a local SQLite database. Manual and automation entries default to a configurable maximum of 2,000 XP per entry. Awarded XP animates into each affected skill bar at a deliberate pace, including linked awards and progress across multiple levels, while each affected skill receives one confetti celebration comparing its former and final level. Focused Practice uses a repeating, configurable Pomodoro countdown with a circular remaining-time indicator and a chime at each completed interval, pauses while a completed session is being logged, resumes if logging is canceled, allows either an entire inaccurate session or individual completed intervals to be discarded from the completion menu, remembers each user's last practiced skill in local storage, and presents earned XP in a dismissible skill-card overlay without leaving the Focus page. Skills support tags, optional emojis, and an individually customizable color shared by the header and XP bar. Skill selectors display names before emojis so browser type-to-search works by skill name. The main skill sheet can be filtered by skill name, code, or tag and sorted by name or level.
 
-Manual XP entries can be marked as a streak day from Record XP. Each skill shows its current run of consecutive marked days, with same-day entries counted once.
-
 ## Setup
 
 Requirements: Node.js 24+ and pnpm 11+.
@@ -218,9 +216,15 @@ The application is designed for trusted self-hosted use. Keep the database file 
 
 Account usernames can be changed under Settings → Account. Usernames must be between 3 and 40 characters and remain unique regardless of letter casing.
 
+### Practice streaks and calendar history
+
+Manual XP entries can be marked as a streak day from Record XP or with the matching Streak toggle when editing an old entry from History. The editor loads the existing mark, previews the streak for the selected date, and saves adding or removing the mark along with the activity. Saving refreshes skill and calendar streaks; canceling leaves the mark unchanged. API edits that omit the streak field preserve the stored mark. History lists show a fire icon beside marked entries; a skill-filtered list only shows the icon when the mark belongs to that skill, not a linked XP recipient. Each skill shows its current run of consecutive marked days, with same-day entries counted once.
+
+XP history includes List and Calendar views in Settings and each skill's History tab. The calendar shows daily XP totals, entry counts, and skill names with their emoji icons. It also shows current and best streaks, with a flame and running count on each marked streak day and in full day details. Streaks use unique marked dates through today, retain yesterday runs until a day is missed, and ignore future marks. The all-skills calendar counts any marked skill day; a selected skill counts only its own marked entries, not linked XP. Streak calculations use the full ledger independently of date and source filters. Use the month arrows, Jump to month, or Today to browse. Clicking a day opens a full day view with all skill badges, XP totals, and expanded entry details, plus the existing edit/delete actions. Previous day, Next day, and Back to calendar keep navigation within History. Existing skill, source, and date filters apply to both views; skill-specific totals use that skill's direct or shared XP awards. Editing remains disabled offline.
+
 ### Achievements and skill history
 
-Click a skill tile to open its Achievements and History tabs. Use the plus button beside the tile's edit button to log XP. Create achievements with an emoji or uploaded image, description, XP reward, and optional bonus award text. Unearned achievements appear faded. Marking an achievement obtained creates a ledger entry and awards XP using the skill's current links. Undoing it, or deleting that ledger entry, removes all its XP awards and returns the achievement to unearned. Obtained achievements must be undone before their rewards can be edited. Bonus award text describes a reward; it does not add extra XP.
+Click a skill tile to open its Achievements and History tabs. Use the plus button beside the tile's edit button to log XP. Create achievements with an emoji or uploaded image, description, XP reward, and optional bonus award text. XP inputs for achievements, logging, and history edits accept whole-number digits only, reject exponent letters and pasted non-digits, and can be cleared while typing. For achievement rewards, enter 0 for no reward or type a new amount before saving. Unearned achievements appear faded. Marking an achievement obtained creates a ledger entry and awards XP using the skill's current links. Undoing it, or deleting that ledger entry, removes all its XP awards and returns the achievement to unearned. Obtained achievements must be undone before their rewards can be edited. Bonus award text describes a reward; it does not add extra XP.
 
 Reader and writer automation keys can query all of their user's history:
 

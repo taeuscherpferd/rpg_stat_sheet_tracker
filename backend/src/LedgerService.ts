@@ -186,7 +186,7 @@ export class LedgerService {
       this.database.connection
         .prepare(
           `
-        UPDATE xp_entries SET date = ?, xp = ?, minutes = ?, activity = ?, notes = ?, updated_at = ?
+        UPDATE xp_entries SET date = ?, xp = ?, minutes = ?, activity = ?, notes = ?, streak = ?, updated_at = ?
         WHERE id = ? AND user_id = ?
       `,
         )
@@ -196,6 +196,7 @@ export class LedgerService {
           input.minutes ?? null,
           input.activity ?? null,
           input.notes ?? null,
+          (input.streak ?? entry.streak) === true ? 1 : 0,
           now,
           entryId,
           userId,

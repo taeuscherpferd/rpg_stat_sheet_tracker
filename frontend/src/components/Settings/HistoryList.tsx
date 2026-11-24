@@ -1,5 +1,7 @@
 import type { XpEntryResponse } from '@rlrpg/shared/contracts'
 import { Pencil, Trash2 } from 'lucide-react'
+import streakFlame from '@/assets/streak-flame.png'
+import { HistoryCalendarLogic } from '@/components/HistoryCalendar/HistoryCalendar.logic'
 import styles from './Settings.module.scss'
 
 export const HistoryList = ({
@@ -8,19 +10,32 @@ export const HistoryList = ({
   setEditing,
   removeEntry,
   skillId,
+  expandedDetails = false,
 }: {
   entries: XpEntryResponse[]
   offline: boolean
   setEditing: (entry: XpEntryResponse) => void
   removeEntry: (entry: XpEntryResponse) => Promise<void>
   skillId?: string
+  expandedDetails?: boolean
 }) => (
   <div className={styles.history}>
     {entries.length === 0 && <p>No entries match these filters.</p>}
     {entries.map((entry) => (
       <article key={entry.id}>
         <div>
-          <strong>{entry.skillName}</strong>
+          <strong className={styles.entryName}>
+            {entry.skillName}
+            {entry.streak === true &&
+              (!skillId || entry.skillId === skillId) && (
+                <img
+                  className={styles.entryStreakIcon}
+                  src={streakFlame}
+                  alt="Counts toward streak"
+                  title={`Counts toward the ${entry.skillName} streak`}
+                />
+              )}
+          </strong>
           <span>
             {entry.date} ·{' '}
             {entry.source === 'focus' ? 'Focused Practice' : entry.source}
@@ -28,14 +43,7 @@ export const HistoryList = ({
           </span>
         </div>
         <div className={styles.entryXp}>
-          +
-          {(skillId
-            ? entry.awards
-                .filter((a) => a.skillId === skillId)
-                .reduce((sum, a) => sum + a.amount, 0)
-            : entry.xp
-          ).toLocaleString()}{' '}
-          XP
+          +{HistoryCalendarLogic.entryXp(entry, skillId).toLocaleString()} XP
           {entry.minutes === null ? '' : <small>{entry.minutes} min</small>}
         </div>
         <div className={styles.entryActions}>
@@ -66,7 +74,7 @@ export const HistoryList = ({
           entry.notes !== null ||
           entry.awards.length > 1 ||
           entry.rolls.length > 0) && (
-          <details>
+          <details open={expandedDetails || undefined}>
             <summary>Details</summary>
             <p>{entry.activity}</p>
             {entry.notes !== null && <p>{entry.notes}</p>}

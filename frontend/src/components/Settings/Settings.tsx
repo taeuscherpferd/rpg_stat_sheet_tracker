@@ -1,4 +1,4 @@
-import { HistoryList } from '@/components/Settings/HistoryList'
+import { HistoryView } from '@/components/HistoryView/HistoryView'
 import { type FormEvent, useMemo, useState } from 'react'
 import {
   BookOpen,
@@ -303,7 +303,9 @@ export const Settings = () => {
                   onChange={(event) => setToDate(event.target.value)}
                 />
               </div>
-              <HistoryList
+              <HistoryView
+                skills={skills}
+                streakEntries={entries}
                 entries={filteredEntries}
                 skillId={skillFilter || undefined}
                 offline={offline}

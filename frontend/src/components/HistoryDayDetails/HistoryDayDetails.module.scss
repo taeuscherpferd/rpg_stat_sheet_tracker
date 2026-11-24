@@ -1,0 +1,74 @@
+.dayDetails {
+  min-width: 0;
+  scroll-margin-top: 90px;
+  h3 {
+    margin: 20px 0 14px;
+    color: var(--forest);
+    font:
+      600 23px 'Cinzel',
+      serif;
+  }
+}
+
+.toolbar,
+.toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 8px 10px;
+    color: var(--forest);
+    background: rgba(255, 253, 247, 0.75);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font: inherit;
+    cursor: pointer;
+  }
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  > span {
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink-soft);
+    background: rgba(255, 248, 230, 0.62);
+  }
+  strong {
+    color: var(--forest);
+    font-size: 23px;
+    margin-right: 4px;
+  }
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 20px;
+  > span {
+    padding: 6px 10px;
+    border-radius: 4px;
+    color: var(--forest);
+    background: rgba(80, 112, 81, 0.1);
+  }
+}
+
+.empty {
+  padding: 22px;
+  border: 1px dashed var(--line);
+  color: var(--ink-soft);
+  border-radius: 4px;
+}
