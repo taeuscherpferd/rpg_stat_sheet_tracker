@@ -2,6 +2,9 @@ import { type FormEvent, useState } from 'react'
 import type { XpEntryResponse } from '@rlrpg/shared/contracts'
 import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { Modal } from '@/components/Modal/Modal'
+import { WholeNumberInput } from '@/components/WholeNumberInput/WholeNumberInput'
+import { StreakToggle } from '@/components/StreakToggle/StreakToggle'
+import { HistoryCalendarLogic } from '@/components/HistoryCalendar/HistoryCalendar.logic'
 import { useAppDispatch, useAppSelector } from '@/hooks'
 import { editXp, refreshData } from '@/store'
 import styles from './HistoryEditDialog.module.scss'
@@ -16,7 +19,9 @@ export const HistoryEditDialog = ({
   onClose,
 }: HistoryEditDialogProps) => {
   const dispatch = useAppDispatch()
-  const { settings, connection } = useAppSelector((state) => state.app)
+  const { settings, connection, entries, skills } = useAppSelector(
+    (state) => state.app,
+  )
   const offline = connection === 'offline'
   const [date, setDate] = useState(entry.date)
   const [xp, setXp] = useState(String(entry.xp))
@@ -25,6 +30,18 @@ export const HistoryEditDialog = ({
   )
   const [activity, setActivity] = useState(entry.activity ?? '')
   const [notes, setNotes] = useState(entry.notes ?? '')
+  const [streak, setStreak] = useState(entry.streak === true)
+  const streakPreview =
+    streak && date
+      ? (HistoryCalendarLogic.streaks(
+          [
+            ...entries.filter((candidate) => candidate.id !== entry.id),
+            { ...entry, date, streak },
+          ],
+          date,
+          entry.skillId,
+        ).byDate[date] ?? 0)
+      : 0
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     await dispatch(
@@ -35,6 +52,7 @@ export const HistoryEditDialog = ({
         minutes: minutes === '' ? null : Number(minutes),
         activity: activity || null,
         notes: notes || null,
+        streak,
       }),
     ).unwrap()
     await dispatch(refreshData())
@@ -55,16 +73,24 @@ export const HistoryEditDialog = ({
           </label>
           <label>
             XP
-            <input
+            <WholeNumberInput
               required
-              type="number"
               min={1}
               max={settings?.maximumManualXp ?? DEFAULT_MAXIMUM_MANUAL_XP}
               value={xp}
-              onChange={(event) => setXp(event.target.value)}
+              onValueChange={setXp}
             />
           </label>
         </div>
+        <StreakToggle
+          pressed={streak}
+          count={streakPreview}
+          currentCount={
+            skills.find((skill) => skill.id === entry.skillId)?.streakCount ?? 0
+          }
+          disabled={offline}
+          onChange={setStreak}
+        />
         <label>
           Minutes
           <input

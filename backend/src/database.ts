@@ -37,6 +37,7 @@ interface EntryRow {
   minutes: number | null
   activity: string | null
   notes: string | null
+  streak: number
   source: 'manual' | 'focus' | 'automation'
   origin: string | null
   created_at: string
@@ -118,6 +119,7 @@ export class AppDatabase {
         id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         skill_id TEXT NOT NULL REFERENCES skills(id) ON DELETE RESTRICT, date TEXT NOT NULL,
         xp INTEGER NOT NULL, minutes INTEGER, activity TEXT, notes TEXT,
+        streak INTEGER NOT NULL DEFAULT 0,
         source TEXT NOT NULL CHECK(source IN ('manual','focus','automation')),
         origin TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
       );
@@ -169,6 +171,11 @@ export class AppDatabase {
     if (!entryColumns.some((column) => column.name === 'achievement_id')) {
       this.connection.exec(
         'ALTER TABLE xp_entries ADD COLUMN achievement_id TEXT',
+      )
+    }
+    if (!entryColumns.some((column) => column.name === 'streak')) {
+      this.connection.exec(
+        'ALTER TABLE xp_entries ADD COLUMN streak INTEGER NOT NULL DEFAULT 0',
       )
     }
     const skillColumns = this.connection
@@ -231,6 +238,26 @@ export class AppDatabase {
     `,
       )
       .all(userId) as SqlRow<LinkRow>[]
+    const user = this.connection
+      .prepare('SELECT timezone FROM users WHERE id = ?')
+      .get(userId) as { timezone: string }
+    const markedDays = this.connection
+      .prepare(
+        'SELECT skill_id, date FROM xp_entries WHERE user_id = ? AND streak = 1 ORDER BY date DESC',
+      )
+      .all(userId) as SqlRow<{ skill_id: string; date: string }>[]
+    const datesBySkill = new Map<string, Set<string>>()
+    for (const day of markedDays) {
+      const dates = datesBySkill.get(day.skill_id) ?? new Set<string>()
+      dates.add(day.date)
+      datesBySkill.set(day.skill_id, dates)
+    }
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: user.timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date())
 
     return rows.map((row) => {
       const progression = ProgressionLogic.fromTotalXp(row.total_xp)
@@ -243,6 +270,7 @@ export class AppDatabase {
         headerColor: row.header_color,
         archived: row.archived_at !== null,
         totalXp: row.total_xp,
+        streakCount: this.currentStreak(datesBySkill.get(row.id), today),
         ...progression,
         links: links
           .filter((link) => link.source_skill_id === row.id)
@@ -297,6 +325,7 @@ export class AppDatabase {
       minutes: entry.minutes,
       activity: entry.activity,
       notes: entry.notes,
+      streak: entry.streak === 1,
       source: entry.achievement_id === null ? entry.source : 'achievement',
       origin: entry.origin,
       createdAt: entry.created_at,
@@ -313,6 +342,25 @@ export class AppDatabase {
         .filter((roll) => roll.entry_id === entry.id)
         .map((roll) => roll.roll),
     }))
+  }
+
+  private currentStreak(dates: Set<string> | undefined, today: string): number {
+    if (dates === undefined || dates.size === 0) return 0
+    const yesterdayDate = new Date(`${today}T00:00:00.000Z`)
+    yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1)
+    let currentDate = dates.has(today)
+      ? today
+      : yesterdayDate.toISOString().slice(0, 10)
+    if (!dates.has(currentDate)) return 0
+
+    let streakCount = 0
+    while (dates.has(currentDate)) {
+      streakCount += 1
+      const previousDate = new Date(`${currentDate}T00:00:00.000Z`)
+      previousDate.setUTCDate(previousDate.getUTCDate() - 1)
+      currentDate = previousDate.toISOString().slice(0, 10)
+    }
+    return streakCount
   }
 
   listAchievements(userId: string, skillId?: string): AchievementResponse[] {

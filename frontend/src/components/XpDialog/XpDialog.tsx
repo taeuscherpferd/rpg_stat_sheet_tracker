@@ -3,6 +3,8 @@ import type { SkillResponse } from '@rlrpg/shared/contracts'
 import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
 import { api } from '@/api'
 import { AppLogic } from '@/components/App/App.logic'
+import { WholeNumberInput } from '@/components/WholeNumberInput/WholeNumberInput'
+import { StreakToggle } from '@/components/StreakToggle/StreakToggle'
 import { Modal } from '@/components/Modal/Modal'
 import {
   XpCelebrationLogic,
@@ -20,13 +22,14 @@ interface XpDialogProps {
 
 export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
   const dispatch = useAppDispatch()
-  const { settings, connection } = useAppSelector((state) => state.app)
+  const { settings, connection, entries } = useAppSelector((state) => state.app)
   const offline = connection === 'offline'
   const [date, setDate] = useState(AppLogic.today())
   const [xp, setXp] = useState('')
   const [minutes, setMinutes] = useState('')
   const [activity, setActivity] = useState('')
   const [notes, setNotes] = useState('')
+  const [streak, setStreak] = useState(false)
   const [activities, setActivities] = useState<string[]>([])
 
   useEffect(() => {
@@ -56,6 +59,7 @@ export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
         minutes: minutes === '' ? null : Number(minutes),
         activity: activity || null,
         notes: notes || null,
+        streak,
       }),
     ).unwrap()
     onClose()
@@ -68,6 +72,24 @@ export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
         ),
       )
     }
+  }
+
+  const streakPreview = () => {
+    const markedDates = new Set(
+      entries
+        .filter((entry) => entry.skillId === skill.id && entry.streak === true)
+        .map((entry) => entry.date),
+    )
+    if (streak) markedDates.add(date)
+    let currentDate = date
+    let count = 0
+    while (markedDates.has(currentDate)) {
+      count += 1
+      const previousDate = new Date(`${currentDate}T00:00:00.000Z`)
+      previousDate.setUTCDate(previousDate.getUTCDate() - 1)
+      currentDate = previousDate.toISOString().slice(0, 10)
+    }
+    return count
   }
 
   return (
@@ -85,17 +107,22 @@ export const XpDialog = ({ skill, onClose, onXpAwarded }: XpDialogProps) => {
           </label>
           <label>
             XP gained
-            <input
+            <WholeNumberInput
               required
               autoFocus
-              type="number"
               min={1}
               max={settings?.maximumManualXp ?? DEFAULT_MAXIMUM_MANUAL_XP}
               value={xp}
-              onChange={(event) => setXp(event.target.value)}
+              onValueChange={setXp}
             />
           </label>
         </div>
+        <StreakToggle
+          pressed={streak}
+          count={streak && date ? streakPreview() : 0}
+          currentCount={skill.streakCount ?? 0}
+          onChange={setStreak}
+        />
         <label>
           Time spent <span>(minutes)</span>
           <input
