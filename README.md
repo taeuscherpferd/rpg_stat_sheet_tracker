@@ -2,7 +2,7 @@
 
 RLRPG turns real-world practice into a personal RPG skill ledger. It tracks levels, linked-skill XP, manual activity, Focused Practice sessions, and automation events in a local SQLite database. Manual and automation entries default to a configurable maximum of 2,000 XP per entry. Awarded XP animates into each affected skill bar at a deliberate pace, including linked awards and progress across multiple levels, while each affected skill receives one confetti celebration comparing its former and final level. Focused Practice uses a repeating, configurable Pomodoro countdown with a circular remaining-time indicator and a chime at each completed interval, pauses while a completed session is being logged, resumes if logging is canceled, allows either an entire inaccurate session or individual completed intervals to be discarded from the completion menu, remembers each user's last practiced skill in local storage, and presents earned XP in a dismissible skill-card overlay without leaving the Focus page. Skills support tags, optional emojis, and an individually customizable color shared by the header and XP bar. Skill selectors display names before emojis so browser type-to-search works by skill name. The main skill sheet can be filtered by skill name, code, or tag and sorted by name or level.
 
-The Character page lets each signed-in user create a character by choosing a name, gender, and class. The class defaults to Adventurer with no placeholder option. Woman and man choices map to Mira and Rowan respectively; Rowan wears a green T-shirt and brown shorts. The portrait updates to reflect gender and class. Adventurers carry a sword, Warriors a battle axe, Rangers a bow, Mages a staff, and Rogues daggers. Use Change character to edit the description (up to 1,000 characters), then Save changes. Descriptions support line breaks and can be cleared. Character details, including the description, are saved per account in that browser. Existing characters retain their default description until edited. The latest supplied transparent sheet contains six complete poses. The idle uses the first pose with a continuous 1.8-second breathing motion, easing between 100% and 97.5% height around the foot baseline. This keeps the feet and horizontal position fixed and avoids jumps between separate drawings. Reduced-motion preferences disable the animation. The atlas frames share a ground line and align the green-shirt torso. To rebuild the transparent sprite atlas from `frontend/src/assets/characters/character-sprite-source.png` on Windows, run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-character-sprites.ps1`. Frames use 160 × 208 cells with a shared foot baseline and horizontal torso center.
+The Character page lets each signed-in user create a character by choosing a name, gender, and class. The class defaults to Adventurer with no placeholder option. Woman and man choices map to Mira and Rowan respectively; Rowan wears a green T-shirt and brown shorts. The portrait updates to reflect gender and class. Adventurers carry a sword, Warriors a battle axe, Rangers a bow, Mages a staff, and Rogues daggers. Use Change character to edit the description (up to 1,000 characters), then Save changes. Descriptions support line breaks and can be cleared. Character details, including the description, are saved per account in that browser. Existing characters retain their default description until edited. The latest supplied transparent sheet contains six complete poses. The idle uses the first pose with a continuous 1.8-second breathing motion, easing between 100% and 97.5% height around the foot baseline. This keeps the feet and horizontal position fixed and avoids jumps between separate drawings. Reduced-motion preferences disable the animation. The atlas frames share a ground line and align the green-shirt torso. To rebuild the transparent sprite atlas from `frontend/src/assets/characters/character-sprite-source.png` on Windows, run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-character-sprites.ps1`. Frames use 160 Ã— 208 cells with a shared foot baseline and horizontal torso center.
 
 Character portraits include six backgrounds: Greenwood Forest (0 XP), Mountain Pass (5,000 XP), Moonlit Lake (15,000 XP), Desert Ruins (30,000 XP), Coastal Cliffs (60,000 XP), and Starlit Sky (100,000 XP). Background and title controls appear only while creating or changing a character. The editor fields are ordered Character title, Name, Gender, and Class; background preview choices appear above the character portrait. Choose any available background directly from the six labeled preview tiles. Backgrounds unlock using the sum of total XP across all skills, including archived skills. Locked tiles show their requirement and progress and cannot be selected. If XP is corrected below the selected background requirement, the portrait falls back to Greenwood Forest. Character title replaces the old fixed company label: The default title is blank (No title), and each earned achievement on Skills unlocks its name as a title. Unfinished achievements appear as locked options; renamed achievements update the displayed title, and removed or revoked achievements clear the displayed title. Save changes/Create character commits appearance choices along with other character details; Keep current character discards all draft changes. The normal character page displays the saved background and title without editing controls. Preferences are stored per account in the same browser.
 
@@ -172,7 +172,7 @@ the application before installing the PWA from another device.
 
 ## Automation API
 
-Under Settings → Automation, choose **Create skills + award XP** to create a writer key. Existing writer keys also have these permissions and can be reused. The key is displayed once and stored only as a hash. Interactive documentation is available at `/api/docs`; the OpenAPI document is `/api/openapi.json`.
+Under Settings â†’ Automation, choose **Create skills + award XP** to create a writer key. Existing writer keys also have these permissions and can be reused. The key is displayed once and stored only as a hash. Interactive documentation is available at `/api/docs`; the OpenAPI document is `/api/openapi.json`.
 
 Discover a skill:
 
@@ -187,17 +187,17 @@ Create a fully configured skill with a writer key:
 curl -X POST "http://localhost:3000/api/v1/automation/skills" \
   -H "Authorization: Bearer $RLRPG_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Korean","code":"KOR","emoji":"🇰🇷","tags":["language"],"headerColor":"#334b3f","startingLevel":5,"links":[{"targetSkillId":"REPLACE_WITH_EXISTING_SKILL_UUID","percentage":20}]}'
+  -d '{"name":"Korean","code":"KOR","emoji":"ðŸ‡°ðŸ‡·","tags":["language"],"headerColor":"#334b3f","startingLevel":5,"links":[{"targetSkillId":"REPLACE_WITH_EXISTING_SKILL_UUID","percentage":20}]}'
 ```
 
 The `createSkill` operation accepts every setting from the skill creation dialog:
 
 | Field           | Rules / default                                                                                                                                 |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`          | Required; 1–80 UTF-16 code units after trimming                                                                                                 |
+| `name`          | Required; 1â€“80 UTF-16 code units after trimming                                                                                                 |
 | `code`          | Required; exactly three uppercase letters or digits; unique per user, including archived skills                                                 |
 | `emoji`         | Optional; null by default, up to 16 UTF-16 code units after trimming                                                                            |
-| `tags`          | Up to eight tags, each 1–24 UTF-16 code units after trimming; unique ignoring case; defaults to `[]`                                            |
+| `tags`          | Up to eight tags, each 1â€“24 UTF-16 code units after trimming; unique ignoring case; defaults to `[]`                                            |
 | `headerColor`   | Six-digit hex color for both header and XP bar; defaults to `#334b3f`                                                                           |
 | `startingLevel` | Integer from 1 to 9999; defaults to 1; initializes XP without history entries or linked awards                                                  |
 | `links`         | Up to three distinct active skills owned by this user, each with a `targetSkillId` UUID and integer `percentage` from 1 to 30; defaults to `[]` |
@@ -216,13 +216,26 @@ curl -X POST "http://localhost:3000/api/v1/automation/xp-entries" \
 
 An assistant should call `listSkills` first, select the stable skill UUID or unique three-character code, and then call `addXp`. Reusing an idempotency key with the same payload returns the original entry; changing the payload returns HTTP 409.
 
+## Anki integration
+
+The Anki desktop add-on in `integrations/anki/rlrpg_anki_update` reads note fields and tags to identify the language, then awards XP only when a card is answered correctly (Hard, Good, or Easy). New cards and reviews use separate XP amounts configured under **Settings â†’ Anki**. Desktop reviews are processed immediately; phone reviews are processed after syncing the phone to AnkiWeb and then syncing desktop Anki. The add-on keeps a small local queue while RLRPG is offline and retries safely with a stable idempotency key.
+
+1. In RLRPG, open **Settings â†’ Automation** and create a **Create skills + award XP** API key named `Anki`.
+2. In Anki, open **Tools â†’ Add-ons â†’ View Files**, then copy the `rlrpg_anki_update` folder from `integrations/anki` into the add-ons folder. Restart Anki.
+3. In **Tools â†’ Add-ons â†’ Anki**, open **Config** for the add-on and set `api_key` to the key shown by RLRPG. Set `api_url` to the base address of your RLRPG server.
+4. In RLRPG **Settings â†’ Anki**, choose XP for correct new cards and correct reviews. In Anki's add-on config, map detected language names to active RLRPG skill codes in `language_to_skill_code`. For example, use `{"Japanese": "JPN", "Spanish": "SPA"}`.
+
+Language detection checks language or target-language fields, `Language: Spanish` style note text, language tags, and common writing systems. For best results, add a `Language` field or a language tag to each note; ambiguous notes are skipped. Each correct review is recorded on its local review date. Keep the API key private; Anki stores add-on configuration on the computer running Anki. If RLRPG is hosted on another device, set `api_url` to the server address reachable from the computer running desktop Anki (including your VPN address when away from home). Failed requests stay queued locally and are retried on the next Anki launch or review.
+
+To update an existing Anki installation after changing the add-on code, copy `__init__.py` and `manifest.json` from `integrations/anki/rlrpg_anki_update` into its installed add-on folder. Keep its existing configuration and restart Anki.
+
 ## Data and Exports
 
 SQLite migrations run automatically at startup. XP totals and levels are derived from the award ledger, while linked awards retain the percentages active when the entry was created. Settings provides separate skills, achievements, and XP-history CSV downloads. Export all three to retain the skill ledger and achievement catalog. The achievements CSV includes earned and unearned achievements, including archived skills, with stable skill IDs, descriptions, emoji or embedded image data, XP rewards, bonus award text, earned dates, and linked XP-entry IDs. Obtained achievement awards also appear in the XP-history CSV. CSV files are portable data exports; the app does not currently import them. For a directly restorable backup, use the SQLite database backup described above, which includes achievements and their linked ledger entries.
 
 The application is designed for trusted self-hosted use. Keep the database file and API keys private and terminate TLS at a reverse proxy when exposing it beyond localhost.
 
-Account usernames can be changed under Settings → Account. Usernames must be between 3 and 40 characters and remain unique regardless of letter casing.
+Account usernames can be changed under Settings â†’ Account. Usernames must be between 3 and 40 characters and remain unique regardless of letter casing.
 
 ### Achievements and skill history
 
@@ -237,3 +250,4 @@ GET /api/v1/automation/xp-entries?activity=throwing&limit=1
 ```
 
 The response includes `entries`, `total`, `totalXp`, `totalMinutes`, `latestPracticeDate`, `timezone`, and pagination fields `limit`, `offset`, and `nextOffset`. Totals cover all matches, including pages not returned. Date bounds are inclusive. With a skill filter, XP includes direct and linked awards to that skill; minutes and latest practice date count entries logged directly for that skill. Achievement rewards are excluded from latest practice date. Results include archived skills. Optional filters: `skillId`, `skillCode`, `from`, `to`, `activity` (case insensitive substring), and `source`. Follow `nextOffset` until null to read all results. `GET /api/v1/automation/xp-entries/:entryId` also reads entries from every source owned by the user. See `/api/docs` for the full API contract.
+

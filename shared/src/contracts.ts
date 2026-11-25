@@ -78,6 +78,11 @@ export const focusSettingsSchema = z.object({
   maximumManualXp: z.number().int().min(1).max(MAXIMUM_MANUAL_XP),
 })
 
+export const ankiSettingsSchema = z.object({
+  newCardXp: z.number().int().min(0).max(MAXIMUM_MANUAL_XP),
+  reviewXp: z.number().int().min(0).max(MAXIMUM_MANUAL_XP),
+})
+
 export const focusSessionSchema = z.object({
   skillId: z.string().uuid(),
   date: dateSchema,
@@ -148,6 +153,7 @@ export interface XpEntryResponse {
 }
 
 export type FocusSettings = z.infer<typeof focusSettingsSchema>
+export type AnkiSettings = z.infer<typeof ankiSettingsSchema>
 
 export interface ApiKeyResponse {
   id: string
@@ -165,7 +171,7 @@ export const achievementInputSchema = z.object({
     .string()
     .trim()
     .max(200000)
-    .default('🏆')
+    .default('ðŸ†')
     .refine(
       (value) =>
         value.length <= 16 ||
@@ -204,3 +210,4 @@ export const historyQuerySchema = z
   .refine((value) => !value.from || !value.to || value.from <= value.to, {
     message: 'from must precede to',
   })
+

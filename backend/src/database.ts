@@ -1,13 +1,17 @@
 import { DatabaseSync, type SQLOutputValue } from 'node:sqlite'
 import type {
   AchievementResponse,
+  AnkiSettings,
   ApiKeyResponse,
   FocusSettings,
   SkillResponse,
   XpAwardResponse,
   XpEntryResponse,
 } from '@rlrpg/shared/contracts'
-import { DEFAULT_MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
+import {
+  DEFAULT_MAXIMUM_MANUAL_XP,
+  MAXIMUM_MANUAL_XP,
+} from '@rlrpg/shared/rules'
 import { ProgressionLogic } from './Progression.logic.js'
 
 interface SkillRow {
@@ -141,6 +145,11 @@ export class AppDatabase {
         natural_twenty_percent INTEGER NOT NULL DEFAULT 50,
         maximum_manual_xp INTEGER NOT NULL DEFAULT ${DEFAULT_MAXIMUM_MANUAL_XP}
       );
+      CREATE TABLE IF NOT EXISTS anki_settings (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        new_card_xp INTEGER NOT NULL DEFAULT 1 CHECK(new_card_xp BETWEEN 0 AND ${MAXIMUM_MANUAL_XP}),
+        review_xp INTEGER NOT NULL DEFAULT 1 CHECK(review_xp BETWEEN 0 AND ${MAXIMUM_MANUAL_XP})
+      );
       CREATE TABLE IF NOT EXISTS api_keys (
         id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         name TEXT NOT NULL, prefix TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE,
@@ -164,6 +173,10 @@ export class AppDatabase {
         earned_entry_id TEXT REFERENCES xp_entries(id) ON DELETE SET NULL
       );
       CREATE INDEX IF NOT EXISTS idx_achievements_skill ON achievements(skill_id);
+    `)
+    this.connection.exec(`
+      INSERT OR IGNORE INTO anki_settings (user_id, new_card_xp, review_xp)
+      SELECT id, 1, 1 FROM users;
     `)
     const entryColumns = this.connection
       .prepare('PRAGMA table_info(xp_entries)')
@@ -401,6 +414,21 @@ export class AppDatabase {
     }
   }
 
+  getAnkiSettings(userId: string): AnkiSettings {
+    const row = this.connection
+      .prepare('SELECT new_card_xp, review_xp FROM anki_settings WHERE user_id = ?')
+      .get(userId) as { new_card_xp: number; review_xp: number }
+    return { newCardXp: row.new_card_xp, reviewXp: row.review_xp }
+  }
+
+  updateAnkiSettings(userId: string, settings: AnkiSettings): void {
+    this.connection
+      .prepare(
+        'UPDATE anki_settings SET new_card_xp = ?, review_xp = ? WHERE user_id = ?',
+      )
+      .run(settings.newCardXp, settings.reviewXp, userId)
+  }
+
   listApiKeys(userId: string): ApiKeyResponse[] {
     return this.connection
       .prepare(
@@ -412,3 +440,4 @@ export class AppDatabase {
       .all(userId) as SqlRow<ApiKeyResponse>[]
   }
 }
+

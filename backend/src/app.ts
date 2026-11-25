@@ -14,6 +14,7 @@ import swaggerUi from 'swagger-ui-express'
 import {
   achievementInputSchema,
   achievementStateSchema,
+  ankiSettingsSchema,
   historyQuerySchema,
   apiKeySchema,
   automationEntrySchema,
@@ -209,6 +210,9 @@ export const createApp = (
           )
         database.connection
           .prepare('INSERT INTO focus_settings (user_id) VALUES (?)')
+          .run(id)
+        database.connection
+          .prepare('INSERT INTO anki_settings (user_id) VALUES (?)')
           .run(id)
       })
     } catch (error) {
@@ -460,6 +464,16 @@ export const createApp = (
     response.json(settings)
   })
 
+  app.get('/api/anki-settings', requireSession, (_request, response) => {
+    response.json(database.getAnkiSettings(userId(response)))
+  })
+
+  app.put('/api/anki-settings', requireSession, (request, response) => {
+    const settings = ankiSettingsSchema.parse(request.body)
+    database.updateAnkiSettings(userId(response), settings)
+    response.json(settings)
+  })
+
   app.post('/api/focus-sessions', requireSession, (request, response) => {
     const input = focusSessionSchema.parse(request.body)
     response
@@ -682,6 +696,9 @@ export const createApp = (
       )
     response.json(skills)
   })
+  automation.get('/anki-settings', (_request, response) => {
+    response.json(database.getAnkiSettings(apiIdentity(response).user_id))
+  })
   automation.post('/skills', (request, response) => {
     const identity = apiIdentity(response)
     if (identity.preset !== 'writer')
@@ -903,3 +920,4 @@ const userDate = (database: AppDatabase, userId: string): string => {
     .get(userId) as { timezone: string }
   return localDate(user.timezone)
 }
+

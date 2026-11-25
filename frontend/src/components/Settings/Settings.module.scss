@@ -70,6 +70,40 @@
   display: grid;
   justify-items: start;
 }
+.ankiSettings {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 14px 0 20px;
+  section {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: rgba(255, 248, 230, 0.5);
+  }
+  h3 {
+    margin: 0;
+    font:
+      600 17px 'Cinzel',
+      serif;
+  }
+  label {
+    display: grid;
+    gap: 6px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.45);
+  }
+}
 .fieldGrid {
   width: 100%;
   display: grid;
@@ -324,6 +358,9 @@
   .filters {
     grid-template-columns: 1fr;
   }
+  .ankiSettings {
+    grid-template-columns: 1fr;
+  }
   .history article {
     grid-template-columns: 1fr auto;
   }
@@ -339,3 +376,4 @@
     grid-column: 1 / 3;
   }
 }
+

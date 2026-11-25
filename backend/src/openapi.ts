@@ -20,7 +20,7 @@ const skillInputJsonSchema = z.toJSONSchema(skillInputSchema, {
     const { minLength = 0, maxLength } = jsonSchema
     delete jsonSchema.minLength
     delete jsonSchema.maxLength
-    jsonSchema.description = `The server trims this value with JavaScript String.prototype.trim() and requires ${minLength}–${maxLength} UTF-16 code units after trimming.`
+    jsonSchema.description = `The server trims this value with JavaScript String.prototype.trim() and requires ${minLength}â€“${maxLength} UTF-16 code units after trimming.`
   },
 })
 
@@ -39,6 +39,14 @@ export const openApiDocument = {
     },
     schemas: {
       SkillInput: skillInputJsonSchema,
+      AnkiSettings: {
+        type: 'object',
+        required: ['newCardXp', 'reviewXp'],
+        properties: {
+          newCardXp: { type: 'integer', minimum: 0, maximum: 1000000 },
+          reviewXp: { type: 'integer', minimum: 0, maximum: 1000000 },
+        },
+      },
       Skill: {
         type: 'object',
         required: [
@@ -139,6 +147,22 @@ export const openApiDocument = {
   },
   security: [{ apiKey: [] }],
   paths: {
+    '/anki-settings': {
+      get: {
+        operationId: 'getAnkiSettings',
+        summary: 'Get XP amounts configured for Anki reviews',
+        responses: {
+          '200': {
+            description: 'Separate XP amounts for new cards and reviews',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AnkiSettings' },
+              },
+            },
+          },
+        },
+      },
+    },
     '/skills': {
       post: {
         operationId: 'createSkill',
@@ -344,3 +368,4 @@ export const openApiDocument = {
     },
   },
 } as const
+

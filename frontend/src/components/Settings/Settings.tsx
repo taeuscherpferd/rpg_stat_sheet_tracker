@@ -1,19 +1,24 @@
 import { HistoryView } from '@/components/HistoryView/HistoryView'
-import { type FormEvent, useMemo, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import {
   BookOpen,
   Copy,
   Download,
   ExternalLink,
   KeyRound,
+  Languages,
   LogOut,
   SlidersHorizontal,
   Trash2,
   UserRound,
 } from 'lucide-react'
-import type { FocusSettings, XpEntryResponse } from '@rlrpg/shared/contracts'
+import type {
+  AnkiSettings,
+  FocusSettings,
+  XpEntryResponse,
+} from '@rlrpg/shared/contracts'
 import { MAXIMUM_MANUAL_XP } from '@rlrpg/shared/rules'
-import { downloadExport } from '@/api'
+import { api, apiErrorMessage, downloadExport } from '@/api'
 import { AccountSettings } from '@/components/AccountSettings/AccountSettings'
 import { HistoryEditDialog } from '@/components/Settings/HistoryEditDialog'
 import { useAppDispatch, useAppSelector } from '@/hooks'
@@ -27,7 +32,13 @@ import {
 } from '@/store'
 import styles from './Settings.module.scss'
 
-type SettingsTab = 'account' | 'practice' | 'history' | 'automation' | 'export'
+type SettingsTab =
+  | 'account'
+  | 'practice'
+  | 'anki'
+  | 'history'
+  | 'automation'
+  | 'export'
 
 export const Settings = () => {
   const dispatch = useAppDispatch()
@@ -44,6 +55,30 @@ export const Settings = () => {
   const [keyName, setKeyName] = useState('')
   const [keyPreset, setKeyPreset] = useState<'reader' | 'writer'>('writer')
   const [newToken, setNewToken] = useState<string | null>(null)
+  const [ankiDraft, setAnkiDraft] = useState<AnkiSettings | null>(null)
+  const [ankiMessage, setAnkiMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (offline) return
+    let canceled = false
+    void api
+      .get<AnkiSettings>('/anki-settings')
+      .then((response) => {
+        if (!canceled) setAnkiDraft(response.data)
+      })
+      .catch((error: unknown) => {
+        if (!canceled) {
+          setAnkiMessage(
+            error instanceof Error
+              ? apiErrorMessage(error)
+              : 'Could not load Anki settings.',
+          )
+        }
+      })
+    return () => {
+      canceled = true
+    }
+  }, [offline])
 
   const filteredEntries = useMemo(
     () =>
@@ -63,6 +98,25 @@ export const Settings = () => {
     if (draft === null) return
     await dispatch(saveSettings(draft)).unwrap()
     await dispatch(refreshData())
+  }
+  const saveAnki = async (event: FormEvent) => {
+    event.preventDefault()
+    if (ankiDraft === null) return
+    setAnkiMessage(null)
+    try {
+      const response = await api.put<AnkiSettings>(
+        '/anki-settings',
+        ankiDraft,
+      )
+      setAnkiDraft(response.data)
+      setAnkiMessage('Anki XP settings saved.')
+    } catch (error) {
+      setAnkiMessage(
+        error instanceof Error
+          ? apiErrorMessage(error)
+          : 'Could not save Anki settings.',
+      )
+    }
   }
   const removeEntry = async (entry: XpEntryResponse) => {
     if (
@@ -116,6 +170,13 @@ export const Settings = () => {
             onClick={() => setTab('practice')}
           >
             <SlidersHorizontal size={18} /> Focused Practice
+          </button>
+          <button
+            className={tab === 'anki' ? styles.active : ''}
+            type="button"
+            onClick={() => setTab('anki')}
+          >
+            <Languages size={18} /> Anki
           </button>
           <button
             className={tab === 'history' ? styles.active : ''}
@@ -263,6 +324,73 @@ export const Settings = () => {
               </button>
             </form>
           )}
+          {tab === 'anki' && (
+            <form
+              className={styles.settingsForm}
+              onSubmit={(event) => void saveAnki(event)}
+            >
+              <h2>Anki XP</h2>
+              <p>
+                Choose XP separately for correct new cards and correct review
+                cards. Set either amount to 0 to turn off those awards.
+              </p>
+              {offline && (
+                <p role="status">Anki settings are unavailable offline.</p>
+              )}
+              {ankiDraft !== null ? (
+                <div className={styles.ankiSettings}>
+                  <section>
+                    <h3>New cards</h3>
+                    <label>
+                      XP for each correct new card
+                      <input
+                        type="number"
+                        min={0}
+                        max={MAXIMUM_MANUAL_XP}
+                        disabled={offline}
+                        value={ankiDraft.newCardXp}
+                        onChange={(event) =>
+                          setAnkiDraft({
+                            ...ankiDraft,
+                            newCardXp: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                  </section>
+                  <section>
+                    <h3>Reviews</h3>
+                    <label>
+                      XP for each correct review card
+                      <input
+                        type="number"
+                        min={0}
+                        max={MAXIMUM_MANUAL_XP}
+                        disabled={offline}
+                        value={ankiDraft.reviewXp}
+                        onChange={(event) =>
+                          setAnkiDraft({
+                            ...ankiDraft,
+                            reviewXp: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                  </section>
+                </div>
+              ) : (
+                <p role="status">Loading Anki settingsâ€¦</p>
+              )}
+              {ankiMessage !== null && <p role="status">{ankiMessage}</p>}
+              <button
+                className={styles.primary}
+                disabled={offline || ankiDraft === null}
+                type="submit"
+              >
+                Save Anki settings
+              </button>
+            </form>
+          )}
           {tab === 'history' && (
             <div>
               <h2>XP history</h2>
@@ -319,7 +447,10 @@ export const Settings = () => {
               <h2>Automation keys</h2>
               <p>
                 Create a key for scripts or assistants. The secret is only shown
-                once. Both presets can read skills and XP history.
+                once. Both presets can read skills and XP history. To connect
+                Anki, create a writer key and follow the setup guide in the
+                project README. Choose XP amounts for new cards and reviews in
+                the Anki section.
               </p>
               {offline && (
                 <p role="status">
@@ -383,7 +514,7 @@ export const Settings = () => {
                         {key.preset === 'writer'
                           ? 'Read skills and XP history, create skills, and award XP'
                           : 'Read skills and XP history'}{' '}
-                        · …{key.prefix}
+                        Â· â€¦{key.prefix}
                       </small>
                     </span>
                     <button
@@ -468,3 +599,4 @@ export const Settings = () => {
     </section>
   )
 }
+

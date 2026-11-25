@@ -1,0 +1,12 @@
+{
+  "api_url": "http://localhost:3000",
+  "api_key": "",
+  "language_to_skill_code": {
+    "German": "DEU",
+    "Chinese": "CHN",
+    "Spanish": "SPA",
+    "Korean": "KOR",
+    "Japanese": "JPN"
+  }
+}
+
