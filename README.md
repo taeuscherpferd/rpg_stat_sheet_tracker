@@ -218,7 +218,7 @@ An assistant should call `listSkills` first, select the stable skill UUID or uni
 
 ## Anki integration
 
-The Anki desktop add-on in `integrations/anki/rlrpg_anki_update` reads note fields and tags to identify the language, then awards XP only when a card is answered correctly (Hard, Good, or Easy). New cards and reviews use separate XP amounts configured under **Settings â†’ Anki**. Desktop reviews are processed immediately; phone reviews are processed after syncing the phone to AnkiWeb and then syncing desktop Anki. The add-on keeps a small local queue while RLRPG is offline and retries safely with a stable idempotency key.
+The Anki desktop add-on in `integrations/anki/rlrpg_anki_update` reads note fields and tags to identify the language, then awards XP only when a card is answered correctly (Hard, Good, or Easy). The first correct answer for a new card uses the new-card XP amount; later answers, including additional learning steps, use the review XP amount. These values are configured separately under **Settings â†’ Anki**. Desktop reviews are processed immediately; phone reviews are processed after syncing the phone to AnkiWeb and then syncing desktop Anki. The add-on keeps a small local queue while RLRPG is offline and retries safely with a stable idempotency key.
 
 1. In RLRPG, open **Settings â†’ Automation** and create a **Create skills + award XP** API key named `Anki`.
 2. In Anki, open **Tools â†’ Add-ons â†’ View Files**, then copy the `rlrpg_anki_update` folder from `integrations/anki` into the add-ons folder. Restart Anki.

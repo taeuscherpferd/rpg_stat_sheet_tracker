@@ -227,13 +227,27 @@ def _record_review(review_id, card, ease, is_new, persist_seen=True):
         )
 
 
+def _is_first_correct_new_card_review(review_id, card_id, review_type, ease):
+    if ease < 2 or review_type != 0:
+        return False
+    earlier_success = mw.col.db.first(
+        "SELECT 1 FROM revlog WHERE cid = ? AND id < ? AND ease >= 2 LIMIT 1",
+        card_id,
+        review_id,
+    )
+    return earlier_success is None
+
+
 def _on_answer(reviewer, card, ease):
     try:
         review = mw.col.db.first(
             "SELECT id, type FROM revlog WHERE cid = ? ORDER BY id DESC LIMIT 1", card.id
         )
         if review is not None:
-            _record_review(review[0], card, ease, review[1] == 0)
+            is_new = _is_first_correct_new_card_review(
+                review[0], card.id, review[1], ease
+            )
+            _record_review(review[0], card, ease, is_new)
     except Exception as error:
         tooltip("RLRPG Anki could not read this review: {}".format(error), period=5000)
 
@@ -252,7 +266,10 @@ def _on_sync_did_finish():
                 with _state_lock:
                     _seen_review_ids.add(str(review_id))
                 continue
-            _record_review(review_id, card, ease, review_type == 0, persist_seen=False)
+            is_new = _is_first_correct_new_card_review(
+                review_id, card_id, review_type, ease
+            )
+            _record_review(review_id, card, ease, is_new, persist_seen=False)
         with _state_lock:
             _save_state()
     except Exception as error:
