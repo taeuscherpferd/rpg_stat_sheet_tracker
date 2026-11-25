@@ -447,10 +447,7 @@ export const Settings = () => {
               <h2>Automation keys</h2>
               <p>
                 Create a key for scripts or assistants. The secret is only shown
-                once. Both presets can read skills and XP history. To connect
-                Anki, create a writer key and follow the setup guide in the
-                project README. Choose XP amounts for new cards and reviews in
-                the Anki section.
+                once. Both presets can read skills and XP history.
               </p>
               {offline && (
                 <p role="status">
